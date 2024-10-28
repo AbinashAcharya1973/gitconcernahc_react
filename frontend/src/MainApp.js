@@ -1,0 +1,117 @@
+// src/App.js
+// src/App.js
+import React, { useState,useEffect,useContext } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Login from './components/Login';
+import Slidebar from './components/Slidebar';
+import AdminDashboard from './components/AdminDashboard';
+import Staff from './Views/Masters/Staff';
+import Products from './Views/Masters/Products';
+import AddProduct from './Views/Masters/Forms/AddProduct';
+import Clients from './Views/Masters/Clients';
+import AddClient from './Views/Masters/Forms/AddClient';
+import AddStaff from './Views/Masters/Forms/AddStaff';
+import Stock_Issue from './Views/Transaction/Stock_Issue';
+import VisitList from './Views/Visit/VisitList';
+import Stock_Issue_List from './Views/Transaction/Stock_Issue_List';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import OpeningStock from './Views/Transaction/OpeningStock';
+import CouponLedger from './Views/Reports/CouponLedger';
+import BonusLedger from './Views/Reports/BonusLedger';
+import { UserContext, UserProvider } from './UserContext';
+import { useNavigate } from 'react-router-dom';
+
+function MainApp() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const [userId,setUserId] = useState(0);
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  const handleLogin = (status, role,id) => {
+    setIsLoggedIn(status);  // Update login state
+    setUserRole(role);  // Set user role
+    setUserId(id)
+  };
+
+  const renderRoutesForRole = (role) => {
+    switch (role) {
+      case 'admin':
+        return (
+          <Routes>
+          <Route path="/admin_dashboard" element={<AdminDashboard />} />
+          <Route path="/master/staff" element={<Staff />} />
+          <Route path="/master/products" element={<Products />} />
+          <Route path="/master/products/add" element={<AddProduct />} />
+          <Route path="/master/clients" element={<Clients />}/>
+          <Route path="/master/clients/add" element={<AddClient />}/>
+          <Route path="/transaction/stock_issue" element={<Stock_Issue/>} />
+          <Route path="/transaction/openingstock" element={<OpeningStock/>} />
+          <Route path="/transaction/Stock-Issue-List" element={<Stock_Issue_List/>} />
+          <Route path="/reports/coupon_ledger" element={<CouponLedger/>} />
+          <Route path="/reports/bonus_ledger" element={<BonusLedger/>} />
+          </Routes>
+        );
+      case 'VSO':
+        return (
+          <Routes>
+            <Route path="/vso_dashboard" element={<VisitList/>}/>
+            <Route path="/visit" element={<VisitList userId={userId}/>}/>
+          </Routes>
+        );
+      case 'Doctor':
+        return (
+          <Routes>
+            {/* Define Doctor-specific routes */}
+          </Routes>
+        );
+      case 'Manager':
+        return (
+          <Routes>
+            {/* Define Manager-specific routes */}
+          </Routes>
+        );
+      default:
+        return null;
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      setIsLoggedIn(true);
+      setUserRole(user.role);
+      // navigate('/admin_dashboard'); // Automatically redirect to dashboard based on role
+    }
+  }, [user]);
+
+  return (
+    
+    
+      <div className="d-flex">
+        {/* {!user ? (
+          <Login onLogin={handleLogin} />
+        ) : (
+          <>
+            <Slidebar role={user.role} />
+            <div className="p-4" style={{ flexGrow: 1 }}>
+              {renderRoutesForRole(userRole)}
+            </div>
+          </>
+        )} */}
+        {!user ? (
+          <Login onLogin={handleLogin} />
+        ) : (
+          <>
+            <Slidebar role={user.role} />
+            <div className="p-4" style={{ flexGrow: 1 }}>
+              {renderRoutesForRole(user.role)}
+            </div>
+          </>
+        )}
+      </div>
+    
+    
+  );
+}
+
+export default MainApp;
