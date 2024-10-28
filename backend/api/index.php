@@ -8,11 +8,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 //echo "API Here";
-// Database connection credentials
-$host = 'localhost';
+include 'db.php';
+// Content of db.php
+/*$host = 'localhost';
 $dbname = 'concernahc_pharma';
 $user = 'root';
-$password = 'Manager';
+$password = 'Manager';*/
 
 try {
     $db = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
