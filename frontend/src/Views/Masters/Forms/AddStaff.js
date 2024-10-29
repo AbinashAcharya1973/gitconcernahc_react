@@ -18,7 +18,7 @@ const AddStaff = ({ close, fetchData }) => {
   useEffect(() => {
     const fetchStaffData = async () => {
       try {
-        const response = await fetch('/api/staffs');  // Replace with your backend endpoint
+        const response = await fetch('http://localhost:80/api/staffs');  // Replace with your backend endpoint
         const data = await response.json();
         setStaffOptions(data);  // Save the fetched data to the staffOptions state
       } catch (error) {
@@ -51,7 +51,7 @@ const AddStaff = ({ close, fetchData }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    fetch('/api/addstaffs', {
+    fetch('http://localhost:80/api/addstaffs', {
       method: 'POST', // Specify the method as POST
       headers: {
         'Content-Type': 'application/json' // Ensure the data being sent is JSON
