@@ -18,6 +18,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import OpeningStock from './Views/Transaction/OpeningStock';
 import CouponLedger from './Views/Reports/CouponLedger';
 import BonusLedger from './Views/Reports/BonusLedger';
+import StockReport from './Views/Reports/StockReport';
+import VisitReport from './Views/Reports/VisitReport';
 import { UserContext, UserProvider } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,6 +52,8 @@ function MainApp() {
           <Route path="/transaction/Stock-Issue-List" element={<Stock_Issue_List/>} />
           <Route path="/reports/coupon_ledger" element={<CouponLedger/>} />
           <Route path="/reports/bonus_ledger" element={<BonusLedger/>} />
+          <Route path="/reports/stock_report" element={<StockReport/>} />
+          <Route path="/reports/visit_report" element={<VisitReport/>} />
           </Routes>
         );
       case 'VSO':

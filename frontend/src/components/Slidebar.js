@@ -124,8 +124,10 @@ const Slidebar = ({ role }) => {
         {!isCollapsed && reportsOpen && (
           <ul className="nav flex-column ms-3">
             <li className="nav-item">
-              <a href="#" className="nav-link link-dark " style={{backgroundColor:" #a6a6a6"}}
-                onClick={() => navigate("/reports/stock")}  >
+              <a href="#" 
+              className="nav-link link-dark " 
+              style={{backgroundColor:" #a6a6a6"}}
+              onClick={() => navigate("/reports/stock_report")}  >
                 Stock Report
               </a>
             </li>
@@ -135,7 +137,7 @@ const Slidebar = ({ role }) => {
                 href="#"
                 className="nav-link link-dark"
                 style={{backgroundColor:" # a6a6a6"}}
-                onClick={() => navigate("/reports/visit")}
+                onClick={() => navigate("/reports/visit_report")}
               >
                 Visit Report
               </a>

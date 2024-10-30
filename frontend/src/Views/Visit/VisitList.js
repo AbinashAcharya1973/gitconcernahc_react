@@ -19,7 +19,7 @@ const VisitList = ({userId}) => {
   useEffect(() => {
     const fetchVisitData = async () => {
       // Replace this with your API endpoint to fetch stock data
-      const response = await fetch('http://localhost:80/api/visithead');
+      const response = await fetch('http://localhost:80/api/visithead/'+userId);
       const data = await response.json();
       setVisitData(data); // Assuming data is an array of stock objects
     };
@@ -47,6 +47,7 @@ const VisitList = ({userId}) => {
               <tr>
                 <th>Date</th>
                 <th>Visit Time</th>
+                <th>Visted To</th>
                 <th>Total Coupon Collected</th>
                 <th>Total Settlement</th>
                 <th>Total Sample</th>
@@ -54,15 +55,22 @@ const VisitList = ({userId}) => {
             </thead>
             <tbody>
               {/* Render rows dynamically from visitData */}
-              {visitData.map((visit, index) => (
+              {Array.isArray(visitData) && visitData.length > 0 ? (
+              visitData.map((visit, index) => (
                 <tr key={index}>
                   <td>{visit.date}</td>
                   <td>{visit.time}</td>
+                  <td>{visit.fullname}</td>
                   <td>{visit.total_coupon_collected}</td>
                   <td>{visit.total_settlement}</td>
                   <td>{visit.total_sample_given}</td>
                 </tr>
-              ))}
+              ))
+              ):(
+                <tr>
+                  <td colSpan="6">No data available</td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </>

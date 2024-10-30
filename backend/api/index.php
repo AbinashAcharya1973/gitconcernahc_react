@@ -344,10 +344,10 @@ elseif ($requestUri === '/api/stock' && $requestMethod === 'POST') {
     $stockData = json_decode($body, true); // Decode JSON data
 
     // Extract product details
-    $product_name = $stockData['product_name'] ?? null;
+    /*$product_name = $stockData['product_name'] ?? null;
     $quantity = $stockData['quantity'] ?? null;
     $stock_point_holder = $stockData['stock_point_holder'] ?? null;
-    $staff_code = $stockData['staff_code'] ?? null;
+    $staff_code = $stockData['staff_code'] ?? null;*/
 
     // Validate the received data
     if (!$product_name || !$quantity || !$stock_point_holder || !$staff_code) {
@@ -549,6 +549,40 @@ elseif ($requestUri === '/api/addvisithead' && $requestMethod === 'POST') {
         echo json_encode(['error' => 'Database insert failed: ' . $e->getMessage()]);
     }
 }
+//for visit list
+elseif (strpos($requestUri,'/api/visithead')===0 && $requestMethod === 'GET') {
+    $staffid = explode('/', $requestUri)[3];
+    if (!$staffid) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Username not provided']);
+        exit();
+    }
+    $sql = 'SELECT * FROM visit_head where staff_id = ?';
+    
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$staffid]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
+    }
+}
 //Opening Stock Update
 elseif ($requestUri === '/api/updateopstock' && $requestMethod === 'POST') {
     $stockData = getPostData(); // Collect raw POST data
@@ -699,8 +733,125 @@ elseif (strpos($requestUri, '/api/getcouponledger/') === 0 && $requestMethod ===
         echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
     }
 }
+//for stock Report
+elseif (strpos($requestUri, '/api/getstockreport') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $sql = 'SELECT * FROM stock';
+    
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
 
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
+    }
+}
+elseif (strpos($requestUri, '/api/getstockholderids') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $sql = 'SELECT id as stock_holder_id,fullname as stock_holder_name FROM staffs';
+    
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
+    }
+}
+elseif (strpos($requestUri, '/api/todayvisits') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $sql = 'SELECT visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.date = CURDATE()';
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
+    }
+}
+elseif (strpos($requestUri, '/api/getvisitbystaff') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $staffId = explode('/', $requestUri)[3];
+
+    // Validate staff ID
+    if (!is_numeric($staffId)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid staff ID']);
+        exit();
+    }
+    $sql = 'SELECT visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.staff_id =?';
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$staffId]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(201);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
+    }
+}
 // Handle unknown routes
 else {
     http_response_code(404);

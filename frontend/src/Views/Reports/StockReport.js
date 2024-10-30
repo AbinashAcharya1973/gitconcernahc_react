@@ -1,89 +1,112 @@
-// import React, { useEffect, useState } from "react";
-// import { Table, Container, Alert } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Table, Container, Alert, Dropdown, Button } from "react-bootstrap";
 
-// const StockReport = () => {
-//   const [stockData, setStockData] = useState([]); // State to hold stock data
-//   const [error, setError] = useState(null);       // State to hold error messages
-//   const [stockholderIdData, setstockholderIdData] =useState([]);
+const StockReport = () => {
+  const [stockData, setStockData] = useState([]);
+  const [stockHolders, setStockHolders] = useState([]);
+  const [selectedStockHolder, setSelectedStockHolder] = useState("");
+  const [error, setError] = useState(null);
 
-//   // Function to fetch stock data from backend
-//   const fetchStockData = async () => {
-//     try {
-//       const response = await fetch("http://localhost:5000/getstockreport");
-//       if (!response.ok) {
-//         throw new Error("Error fetching stock data");
-//       }
-//       const data = await response.json();
-//       setStockData(data); // Set the received stock data into state
-//     } catch (err) {
-//       setError(err.message); // Set error message if request fails
-//     }
-//   };
+  const fetchData = async () => {
+    try {
+      const response = await fetch("http://localhost:80/api/getstockreport");
+      if (!response.ok) throw new Error("Network response was not ok");
+      const dataReceived = await response.json();
+      setStockData(dataReceived);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
-//   useEffect(() => {
-//     fetchStockData(); // Fetch stock data when the component mounts
-//   }, []);
+  const fetchStockHolders = async () => {
+    try {
+      const response = await fetch("http://localhost:80/api/getstockholderids");
+      if (!response.ok) throw new Error("Network response was not ok");
+      const stockHoldersReceived = await response.json();
+      setStockHolders(stockHoldersReceived);
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
-//   // const fetchStockHolderIdData = async () => {
-//   //   try {
-//   //     const response = await fetch("http://localhost:5000/getstockholderids");
-//   //     if (!response.ok) {
-//   //       throw new Error("Error fetching stock data");
-//   //     }
-//   //     const data = await response.json();
-//   //     setStockData(data); // Set the received stock data into state
-//   //   } catch (err) {
-//   //     setError(err.message); // Set error message if request fails
-//   //   }
-//   // };
+  useEffect(() => {
+    fetchData();
+    fetchStockHolders();
+  }, []);
 
-//   // useEffect(() => {
-//   //   fetchStockHolderIdData(); // Fetch stock data when the component mounts
-//   // }, []);
+  const filteredStockData = selectedStockHolder
+    ? stockData.filter(item => item.stock_holder_id === selectedStockHolder)
+    : stockData;
 
+  return (
+    <Container>
+      <h1>Stock Report</h1>
+      {error ? (
+        <Alert variant="danger">Error fetching stock report: {error}</Alert>
+      ) : (
+        <>
+          <div className="mb-3">
+            <Dropdown>
+              <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                {selectedStockHolder ? `Selected: ${selectedStockHolder}` : "Select Stock Holder"}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {stockHolders.map(stock => (
+                  <Dropdown.Item
+                    key={stock.stock_holder_id}
+                    onClick={() => setSelectedStockHolder(stock.stock_holder_id)}
+                  >
+                    {stock.stock_holder_name} ({stock.stock_holder_id})
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
 
-//   return (
-//     <Container>
-//       <h1>Stock Report</h1>
-//       {error && <Alert variant="danger">{error}</Alert>} {/* Show error message if any */}
-      
-//       {/* Table to display stock data */}
-//       <Table striped bordered hover className="mt-3">
-//         <thead>
-//           <tr>
-//             <th>Product ID</th>
-//             <th>Product Name</th>
-//             <th>Product Type</th>
-//             <th>Opening Quantity</th>
-//             <th>Stock In Quantity</th>
-//             <th>Stock Out Quantity</th>
-//             <th>Closing Stock</th>
-//             <th>Stock Holder ID</th>
-//           </tr>
-//         </thead>
-//         <tbody>
-//           {stockData.length > 0 ? (
-//             stockData.map((item, index) => (
-//               <tr key={`${item.product_id}-${index}`}>
-//                 <td>{item.product_id}</td>
-//                 <td>{item.product_name}</td>
-//                 <td>{item.product_type}</td>
-//                 <td>{item.opqty}</td>
-//                 <td>{item.stock_in_qty}</td>
-//                 <td>{item.stock_out_qty}</td>
-//                 <td>{item.closing_stock}</td>
-//                 <td>{item.stock_holder_id}</td>
-//               </tr>
-//             ))
-//           ) : (
-//             <tr>
-//               <td colSpan="8">No stock data available</td>
-//             </tr>
-//           )}
-//         </tbody>
-//       </Table>
-//     </Container>
-//   );
-// };
+            <Button
+              variant="secondary"
+              className="mt-2 width=sm"
+              onClick={() => setSelectedStockHolder("")}
+            >
+              Reset Filter
+            </Button>
+          </div>
 
-// export default StockReport;
+          <Table striped bordered hover className="mt-3">
+            <thead>
+              <tr>
+                <th>Product ID</th>
+                <th>Product Name</th>
+                <th>Product Type</th>
+                <th>Opening Quantity</th>
+                <th>Stock In Quantity</th>
+                <th>Stock Out Quantity</th>
+                <th>Closing Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(filteredStockData) && filteredStockData.length > 0 ? (
+                filteredStockData.map((item, index) => (
+                  <tr key={`${item.product_id}-${index}`}>
+                    <td>{item.product_id}</td>
+                    <td>{item.product_name}</td>
+                    <td>{item.product_type}</td>
+                    <td>{item.opqty}</td>
+                    <td>{item.stock_in_qty}</td>
+                    <td>{item.stock_out_qty}</td>
+                    <td>{item.closing_stock}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7">No data available</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
+        </>
+      )}
+    </Container>
+  );
+};
+
+export default StockReport;
