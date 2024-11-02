@@ -5,9 +5,20 @@ import { useParams } from 'react-router-dom';
 const VisitList = ({userId}) => {
   const [showAddVisit, setShowAddVisit] = useState(false);
   const [visitData, setVisitData] = useState([]);
+  const [Clients,setClients]=useState([]);
+  const [selectedClientId,setselectedClientId]=useState("");
   // const {userId} = useParams();
   
-
+  const fetchClients = async () =>{
+    try{
+        const response = await fetch("http://localhost:80/api/getvsoclients/"+userId)
+        if(!response.ok) throw new Error("Failed to get clients");
+        const data=await response.json();
+        setClients(data);
+    } catch(err){
+        console.error("Error fetching Clients",err.message);
+    }
+};
   const handleAddVisitClick = () => {
     setShowAddVisit(true); // Show Add Visit form
   };
@@ -25,6 +36,7 @@ const VisitList = ({userId}) => {
     };
 
     fetchVisitData();
+    fetchClients();
   }, []);
 
   // const handleFormSubmit = (formData) => {
@@ -40,10 +52,18 @@ const VisitList = ({userId}) => {
           
           <Form.Label>Select Doctor/Client</Form.Label>
           <Form.Control
-          as="select"
-          name="Doctor"
-          value="1"
-          />
+            as='select'
+            value={selectedClientId}
+            onChange={(e)=>setselectedClientId(e.target.value)}>
+                <option value="">Select Client</option>
+                {Clients.map((client)=>(
+                    <option key={client.id} value={client.client_id}>
+                        {client.client_name}
+                    </option>
+                ))}
+          </Form.Control>
+          
+
           <Table striped bordered hover>
             <thead>
               <tr>
