@@ -27,3 +27,25 @@ code {
   height: 100%;
   }
 }
+
+.icon-blue {
+  color: blue;  
+}
+.icon-pink{
+  color:#FF78AC
+}
+.icon-yellow{
+  color:#ECA427
+}
+.icon-green{
+  color:#205A28
+}
+.icon-red{
+  color:#C72B32
+}
+.icon-pblue{
+  color:#194cbb
+}
+.icon-orange{
+  color:orangered; 
+}

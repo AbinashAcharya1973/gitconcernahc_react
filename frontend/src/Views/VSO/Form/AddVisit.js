@@ -111,11 +111,29 @@ const onClose = () => {
   });
   navigate("/visitlist")
 };
-  const handleFormChange = (e) => {
+const fetchcouponbalance = async (cid) => {
+  try {
+    const response = await fetch("http://localhost:80/api/couponbalance/" + cid);
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+    setPointSummary({
+      ...PointSummary,
+      OpeningPoints: parseFloat(data.closing_balance),
+    });
+  } catch (err) {
+    console.error("Error fetching data:", err);
+  }
+};  
+const handleFormChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    if(e.target.name === 'visitedTo') {
+      fetchcouponbalance(e.target.value)
+    }
   };
 
   const handleCouponCollectionChange = (e) => {
@@ -248,18 +266,18 @@ const onClose = () => {
 
     // Update the total sums
     setTotal({
-      totalQty: total.totalQty + parseInt(couponCollection.qty),
-      totalPoints: total.totalPoints + parseInt(couponCollection.points),
-      totalBonus: total.totalBonus + parseInt(couponCollection.bonous)
+      totalQty: total.totalQty + parseFloat(couponCollection.qty),
+      totalPoints: total.totalPoints + parseFloat(couponCollection.points),
+      totalBonus: total.totalBonus + parseFloat(couponCollection.bonous)
     });
     // Update PointSummary with CollectedPoints and correct ClosingPoints calculation
     setPointSummary({
       ...PointSummary,
-      CollectedPoints: PointSummary.CollectedPoints + parseInt(couponCollection.points),
+      CollectedPoints: PointSummary.CollectedPoints + parseFloat(couponCollection.points),
       ClosingPoints: 
-        parseInt(PointSummary.OpeningPoints) +
+        parseFloat(PointSummary.OpeningPoints) +
         PointSummary.CollectedPoints +
-        parseInt(couponCollection.points) -
+        parseFloat(couponCollection.points) -
         PointSummary.SettledPoints,
     });
 
@@ -274,18 +292,18 @@ const onClose = () => {
 
     // Update the total sums
     setTotalSettlement({
-      totalQty1: totalSettlement.totalQty1 + parseInt(couponSettlement.qty),
-      totalPoints1: totalSettlement.totalPoints1 + parseInt(couponSettlement.points),
+      totalQty1: totalSettlement.totalQty1 + parseFloat(couponSettlement.qty),
+      totalPoints1: totalSettlement.totalPoints1 + parseFloat(couponSettlement.points),
       // totalBonus1: totalSettlement.totalBonus1 + parseInt(couponSettlement.bonous)
     });
     // Update PointSummary with SettledPoints and calculate ClosingPoints
     setPointSummary({
       ...PointSummary,
-      SettledPoints: PointSummary.SettledPoints + parseInt(couponSettlement.points),
+      SettledPoints: PointSummary.SettledPoints + parseFloat(couponSettlement.points),
       ClosingPoints: 
-        parseInt(PointSummary.OpeningPoints) +
+        parseFloat(PointSummary.OpeningPoints) +
         PointSummary.CollectedPoints -
-        (PointSummary.SettledPoints + parseInt(couponSettlement.points)),
+        (PointSummary.SettledPoints + parseFloat(couponSettlement.points)),
     });
     setCouponSettlement({ product_name: '', qty: '', points: 0 });
   };
@@ -295,8 +313,8 @@ const onClose = () => {
       SampleGivenList: [...formData.SampleGivenList, productSample],
     });
     setTotalSample({
-      totalQty2: totalSample.totalQty2 + parseInt(productSample.qty),
-      totalPoints2: totalSample.totalPoints2 + parseInt(productSample.points),
+      totalQty2: totalSample.totalQty2 + parseFloat(productSample.qty),
+      totalPoints2: totalSample.totalPoints2 + parseFloat(productSample.points),
       // totalBonus2: totalSampleGiven.totalBonus2 + parseInt(productSample.bonous)
     });
 
@@ -307,7 +325,7 @@ const onClose = () => {
       GiftList: [...formData.GiftList, Gift],
     });
     setTotalGift({
-      totalQty: totalGift.totalQty + parseInt(Gift.qty),      
+      totalQty: totalGift.totalQty + parseFloat(Gift.qty),      
       // totalBonus3: totalGift.totalBonus3 + parseInt(gift.bonous)
     });
   };

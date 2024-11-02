@@ -81,11 +81,11 @@ elseif (strpos($requestUri, '/api/usertype/') === 0 && $requestMethod === 'GET')
     }
 
     // SQL query to fetch user information based on usercode
-    $sql = 'SELECT username, usertype, staff_id, password FROM users WHERE usercode = ?';
+    $sql = 'SELECT username, usertype, staff_id, password FROM users WHERE usercode = ? and password = ?';
 
     try {
         $stmt = $db->prepare($sql);
-        $stmt->execute([$usercode]);
+        $stmt->execute([$usercode, $password]);
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Check if the user exists
@@ -667,7 +667,7 @@ elseif (strpos($requestUri, '/api/getbonusledger/') === 0 && $requestMethod === 
     }
 
     // Prepare the SQL query to fetch data from bonus_ledger for the given staff ID
-    $sql = 'SELECT * FROM bonus_ledger WHERE staff_id = ?';
+    $sql = 'SELECT * FROM bonus_ledger WHERE client_id = ?';
     
     try {
         // Execute the query
@@ -851,6 +851,81 @@ elseif (strpos($requestUri, '/api/getvisitbystaff') === 0 && $requestMethod === 
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
     }
+}
+//Password Update
+elseif (strpos($requestUri, '/api/update-password') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $updateinfo = getPostData();
+    $staffId = $updateinfo['userId'];
+    $oldPassword = $updateinfo['currentPassword'];
+    $newPassword = $updateinfo['newPassword'];    
+    $usertype=$updateinfo['userType'];
+    $sql = 'SELECT * FROM users WHERE staff_id = ? and usertype =? and password =?';
+    try{
+        $stmt=$db->prepare($sql);
+        $stmt->execute([$staffId,$usertype,$oldPassword]);
+        $result=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($result)>0){
+            $sql = 'UPDATE users SET password = ? WHERE staff_id = ? and usertype =?';
+            $stmt=$db->prepare($sql);
+            $stmt->execute([$newPassword,$staffId,$usertype]);
+            http_response_code(201);
+        }else{
+            http_response_code(404);
+            echo json_encode(['error' => 'Invalid Password']);
+        }
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to Update Password: ' . $ex->getMessage()]);
+    }    
+}
+//get coupon ledger closing balance
+elseif (strpos($requestUri, '/api/couponbalance') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    // Get the client ID from the request
+    $clientId = explode('/', $requestUri)[3];    
+    // Check if client ID is provided
+    if (!$clientId) {
+        echo json_encode(['error' => 'Client ID is required']);
+        exit;
+    }
+
+    $sql = 'SELECT sum(dr) as tdr,sum(cr) as tcr FROM coupon_ledger WHERE client_id = ?';
+    try{
+        $stmt=$db->prepare($sql);
+        $stmt->execute([$clientId]);
+        $result=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($result)>0){
+            $drtotal=$result[0]['tdr'];
+            $crtotal=$result[0]['tcr'];
+            $closingBalance=$drtotal-$crtotal;
+            http_response_code(201);
+            echo json_encode(['closing_balance' => $closingBalance]);            
+        }
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $ex->getMessage()]);
+    }   
+}
+elseif(strpos($requestUri,'/api/getvsoclients') === 0 && $requestMethod === 'GET'){
+    $vsoid=explode('/',$requestUri)[3];
+    $sql = 'SELECT distinct doctor_id as client_id,fullname as client_name FROM visit_head WHERE staff_id = ?';
+    try{
+        $stmt=$db->prepare($sql);
+        $stmt->execute([$vsoid]);
+        $result=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($result)>0){
+            http_response_code(201);
+            echo json_encode($result);
+        }else{
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found']);
+        }
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch Client List: ' . $ex->getMessage()]);
+    }
+
 }
 // Handle unknown routes
 else {

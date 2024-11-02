@@ -44,7 +44,7 @@ const Slidebar = ({ role }) => {
       </li>
       <li className="nav-item" onClick={toggleMasterMenu}>
         <a href="#" className="nav-link link-dark" style={{backgroundColor:" #a6a6a6"}}>
-          <i className="bi bi-puzzle"></i> {!isCollapsed && "Master"}
+          <i className="bi bi-gear-fill icon-orange"></i> {!isCollapsed && "Master"}
         </a>
         {!isCollapsed && masterOpen && (
           <ul className="nav flex-column ms-3">
@@ -74,13 +74,13 @@ const Slidebar = ({ role }) => {
               >
                 Clients
               </a>
-            </li>
+            </li>            
           </ul>
         )}
       </li>
       <li className="nav-item" onClick={toggleTransactionMenu}>
         <a href="#" className="nav-link link-dark" style={{backgroundColor:" #a6a6a6"}}>
-          <i className="bi bi-people"></i> {!isCollapsed && "Transaction"}
+          <i className="bi bi-box-arrow-in-right icon-red"></i> {!isCollapsed && "Transaction"}
         </a>
         {!isCollapsed && transactionOpen && (
           <ul className="nav flex-column ms-3">
@@ -119,7 +119,7 @@ const Slidebar = ({ role }) => {
       </li>
       <li className="nav-item" onClick={toggleReportsMenu}>
         <a href="#" className="nav-link link-dark" style={{backgroundColor:" #a6a6a6"}}>
-          <i className="bi bi-people"></i> {!isCollapsed && "Reports"}
+          <i className="bi bi-file icon-green"></i> {!isCollapsed && "Reports"}
         </a>
         {!isCollapsed && reportsOpen && (
           <ul className="nav flex-column ms-3">
@@ -163,8 +163,19 @@ const Slidebar = ({ role }) => {
                 Bonus Collection Report
               </a>
             </li>
+            
           </ul>
         )}
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          style={{backgroundColor:" #a6a6a6"}}
+          onClick={() => navigate("/admin/profile")}
+        >
+          <i className="bi bi-person-circle icon-red"></i> Profile Settings
+        </a>
       </li>
     </>
   );
@@ -177,16 +188,62 @@ const Slidebar = ({ role }) => {
           className="nav-link link-dark"
           onClick={() => navigate("/vso_dashboard")}
         >
-          <i className="bi bi-speedometer2"></i> {!isCollapsed && "Dashboard"}
+          <i className="bi bi-speedometer2 icon-blue"></i> {!isCollapsed && "Dashboard"}
+        </a>
+      </li>
+      
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/visitlist")}
+        >
+          <i className="bi bi-list-stars icon-orange"></i> {!isCollapsed && "Visit List"}
         </a>
       </li>
       <li className="nav-item">
         <a
           href="#"
           className="nav-link link-dark"
-          onClick={() => navigate("/visit")}
+          onClick={() => navigate("/addvisit")}
         >
-          <i className="bi bi-people"></i> {!isCollapsed && "Visit"}
+          <i className="bi bi-node-plus icon-pblue"></i> {!isCollapsed && "Add Visit"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/vsocouponledg")}
+        >
+          <i className="bi bi-card-heading icon-red"></i> {!isCollapsed && "Coupon Ledger"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/vsobonusledg")}
+        >
+          <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Bonus Ledger"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/vsostock")}
+        >
+          <i className="bi bi-bookshelf icon-yellow"></i> {!isCollapsed && "Stock View"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/vsoprofile")}
+        >
+          <i className="bi bi-person-circle icon-pink"></i> {!isCollapsed && "Profile Settings"}
         </a>
       </li>
     </>

@@ -31,7 +31,7 @@ const BonusLedger = () => {
   // Fetch Staff IDs
   const fetchStaffData = async () => {
     try {
-      const response = await fetch("http://localhost:80/api/staffs");
+      const response = await fetch("http://localhost:80/api/clients");
       if (!response.ok) {
         throw new Error("Failed to fetch staff IDs");
       }
@@ -107,12 +107,12 @@ return (
           <>
             <Dropdown onSelect={handleStaffSelect}>
               <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                {selectedStaffId ? `Selected Staff: ${selectedStaffId}` : "Select Staff"}
+                {selectedStaffId ? `Selected Client: ${selectedStaffId}` : "Select Client"}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 {staffData.map((staffs) => (
-                  <Dropdown.Item key={staffs.id} eventKey={staffs.id}>
-                    {staffs.fullname}
+                  <Dropdown.Item key={staffs.client_id} eventKey={staffs.client_id}>
+                    {staffs.client_name}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
