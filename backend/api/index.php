@@ -803,7 +803,7 @@ elseif (strpos($requestUri, '/api/todayvisits') === 0 && $requestMethod === 'GET
 
         // If no results are found, return a 404 error
         if (empty($results)) {
-            http_response_code(404);
+            http_response_code(201);
             echo json_encode(['error' => 'No records found for the provided staff ID']);
             exit();
         }
@@ -927,7 +927,59 @@ elseif(strpos($requestUri,'/api/getvsoclients') === 0 && $requestMethod === 'GET
     }
 
 }
-// Handle unknown routes
+elseif (strpos($requestUri,'/api/clientvisit/')===0 && $requestMethod === 'GET') {
+    $clientid = explode('/', $requestUri)[3];
+    if (!$clientid) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Username not provided']);
+        exit();
+    }
+    $sql = 'SELECT * FROM visit_head where doctor_id = ?';
+    
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$clientid]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found for the provided staff ID'.$clientid]);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch coupon ledger data: ' . $e->getMessage()]);
+    }
+}
+elseif(strpos($requestUri,'/api/stafftypes') === 0 && $requestMethod === 'GET'){
+    
+    $sql = 'SELECT distinct designation FROM staffs';
+    try{
+        $stmt=$db->prepare($sql);
+        $stmt->execute();
+        $result=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($result)>0){
+            http_response_code(201);
+            echo json_encode($result);
+        }else{
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found']);
+        }
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch Client List: ' . $ex->getMessage()]);
+    }
+
+}// Handle unknown routes
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);

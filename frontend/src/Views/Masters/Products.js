@@ -53,7 +53,9 @@ const Products = () => {
     "Type",
     "Name",
     "Points",
-    "Bonous"
+    "Bonous",
+    "Setllement Points",
+    "Sample Points"
   ];
 
   const finalData = data?.map((item, index) => {
@@ -64,6 +66,8 @@ const Products = () => {
       points: item.points,
       bonous: item.bonous,
       stock: item.stock,
+      samplePoints: item.points_on_sample,
+      settlementpoints: item.points_on_settlement,
       Action: (
         <div style={{ display: "flex", gap: "1rem" }}>
           <Button
@@ -134,6 +138,8 @@ const Products = () => {
                     <td>{item.name}</td>
                     <td>{item.points}</td>
                     <td>{item.bonous}</td>
+                    <td>{item.settlementpoints}</td>
+                    <td>{item.samplePoints}</td>
                     {/* <td>{item.Action}</td> */}
                   </tr>
                 ))

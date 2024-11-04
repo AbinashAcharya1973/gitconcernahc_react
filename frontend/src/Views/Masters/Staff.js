@@ -16,8 +16,8 @@ const SelectDropdown = ({ label, name, value, onChange, options }) => {
       >
         <option value="">Select {label}</option>
         {options.map((option) => (
-          <option key={option.usertype} value={option.usertype}>
-            {option.usertype} {/* Assuming option.usertype is the designation */}
+          <option key={option.designation} value={option.designation}>
+            {option.designation} {/* Assuming option.usertype is the designation */}
           </option>
         ))}
       </select>
@@ -71,7 +71,7 @@ const Staff = () => {
 
   const fetchUserTypes = async () => {
     try {
-      const response = await fetch('http://localhost:80/api/usertypes');
+      const response = await fetch('http://localhost:80/api/stafftypes');
       const dataReceive1 = await response.json();
       setUserOptions(dataReceive1);
     } catch (error) {

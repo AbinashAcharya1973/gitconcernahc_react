@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Table, Container, Alert, Dropdown, Button } from "react-bootstrap";
+import { Table, Container, Alert, Dropdown, Button,Form } from "react-bootstrap";
 
 const VisitReport = () => {
   const [stockData, setStockData] = useState([]);
   const [stockHolders, setStockHolders] = useState([]);
   const [selectedStockHolder, setSelectedStockHolder] = useState("");
   const [error, setError] = useState(null);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [filteredVisits, setFilteredVisits] = useState([]);
 
   const fetchStockHolders = async () => {
     try {
@@ -41,6 +44,17 @@ const VisitReport = () => {
     if (selectedStockHolder) fetchData(selectedStockHolder); // Refetch data on stock holder change
   }, [selectedStockHolder]);
 
+  const filterVisitsByDate = () => {
+    const filtered = stockData.filter(visit => {
+      const visitDate = new Date(visit.date);
+      const start = fromDate ? new Date(fromDate) : null;
+      const end = toDate ? new Date(toDate) : null;
+      
+      return (!start || visitDate >= start) && (!end || visitDate <= end);
+    });
+    setFilteredVisits(filtered);
+  };
+  
   return (
     <Container>
       <h1>Visit Report</h1>
@@ -49,29 +63,53 @@ const VisitReport = () => {
       ) : (
         <>
           <div className="mb-3">
-            <Dropdown>
-              <Dropdown.Toggle variant="primary" id="dropdown-basic">
-                {selectedStockHolder ? `Selected: ${selectedStockHolder}` : "Select Staff"}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {stockHolders.map(stock => (
-                  <Dropdown.Item
-                    key={stock.stock_holder_id}
-                    onClick={() => setSelectedStockHolder(stock.stock_holder_id)}
-                  >
-                    {stock.stock_holder_name} ({stock.stock_holder_id})
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <div className="row">
+              <div className="col-mb-12">
+                <Dropdown>
+                  <Dropdown.Toggle variant="primary" id="dropdown-basic">
+                    {selectedStockHolder ? `Selected: ${selectedStockHolder}` : "Select Staff"}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    {stockHolders.map(stock => (
+                      <Dropdown.Item
+                        key={stock.stock_holder_id}
+                        onClick={() => setSelectedStockHolder(stock.stock_holder_id)}
+                      >
+                        {stock.stock_holder_name} ({stock.stock_holder_id})
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
 
-            <Button
-              variant="secondary"
-              className="mt-2 width=sm"
-              onClick={() => setSelectedStockHolder("")}
-            >
-              Reset Filter
-            </Button>
+                <Button
+                  variant="secondary"
+                  className="mt-2 width=sm"
+                  onClick={() => setSelectedStockHolder("")}
+                >
+                  Reset Filter
+                </Button>
+              </div>
+              </div>
+              <div className="row">
+              <div className="col-mb-12">
+                <Form.Label>Select Client/Doctor</Form.Label>              
+                <Form.Control
+                  as="select"
+                >
+                  <option></option>
+                </Form.Control>
+              </div>
+              </div>
+              <div className="row">
+                <div className="col-mb-6">
+                  <Form.Label>From Date</Form.Label>
+                  <Form.Control type='Date' value={fromDate} onChange={(e) => setFromDate(e.target.value)}/>
+                </div>
+                <div className="col-mb-6">
+                  <Form.Label>To Date</Form.Label>
+                  <Form.Control type='Date' value={toDate} onChange={(e) => setToDate(e.target.value)}/>
+                </div>
+              </div>            
           </div>
 
           <Table striped bordered hover className="mt-3">
