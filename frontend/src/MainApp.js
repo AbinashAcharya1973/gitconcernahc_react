@@ -30,6 +30,11 @@ import DoctorDashboard from './Views/Doctor/Dashboard';
 import DoctorCouponLedger from './Views/Doctor/CouponLedger';
 import DoctorVisitList from './Views/Doctor/VisitList';
 import DoctorProfile from './Views/Doctor/Profile';
+import ManagerDashboard from './Views/Manager/Dashboard';
+import ManagerProfile from './Views/Manager/Profile';
+import ManagerVisitReport from './Views/Manager/VisitReport';
+import ManagerStockReport from './Views/Manager/StockView';
+import ManagerCouponLedger from './Views/Manager/CouponLedger';
 import { UserContext, UserProvider } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -90,10 +95,15 @@ function MainApp() {
             <Route path="/doctor/profile" element={<DoctorProfile userId={userId}/>}/>
           </Routes>
         );
-      case 'Manager':
+      case 'manager':
         return (
           <Routes>
             {/* Define Manager-specific routes */}
+            <Route path="/manager" element={<ManagerDashboard userId={userId}/>}/>
+            <Route path="/manager/visitreport" element={<ManagerVisitReport userId={userId}/>}/>
+            <Route path="/manager/stockreport" element={<ManagerStockReport userId={userId}/>}/>
+            <Route path="/manager/couponledger" element={<ManagerCouponLedger userId={userId}/>}/>
+            <Route path="/manager/profile" element={<ManagerProfile userId={userId}/>}/>
           </Routes>
         );
       default:

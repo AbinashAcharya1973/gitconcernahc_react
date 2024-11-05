@@ -289,10 +289,61 @@ const renderDoctorMenu=() =>(
           style={{backgroundColor:" #a6a6a6"}}
           onClick={() => navigate("/doctor/profile")}
         >
-          <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Profile Settings"}
+          <i className="bi bi-person-circle icon-pink"></i> {!isCollapsed && "Profile Settings"}
         </a>
       </li>
 </>
+);
+const renderManagerMenu = () =>(
+  <>
+    <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          
+          onClick={() => navigate("/manager")}
+        >
+          <i className="bi bi-speedometer2"></i> {!isCollapsed && "Dashboard"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/manager/visitreport")}
+        >
+          <i className="bi bi-list-stars icon-orange"></i> {!isCollapsed && "Visit Report"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/manager/couponledger")}
+        >
+          <i className="bi bi-card-heading icon-red"></i> {!isCollapsed && "Coupon Ledger"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          onClick={() => navigate("/manager/stockreport")}
+        >
+          <i className="bi bi-bookshelf icon-yellow"></i> {!isCollapsed && "Stock View"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          
+          onClick={() => navigate("/manager/profile")}
+        >
+          <i className="bi bi-person-circle icon-pink"></i> {!isCollapsed && "Profile Settings"}
+        </a>
+      </li>
+  </>
 );
   const renderSidebarContent = () => {
     switch (role) {
@@ -303,7 +354,7 @@ const renderDoctorMenu=() =>(
       case "doctor":
         return renderDoctorMenu();
       case "manager":
-        return <li>Manager specific menu</li>;
+        return renderManagerMenu();
       default:
         return null;
     }
