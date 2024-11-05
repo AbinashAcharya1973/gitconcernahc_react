@@ -979,7 +979,41 @@ elseif(strpos($requestUri,'/api/stafftypes') === 0 && $requestMethod === 'GET'){
         echo json_encode(['error' => 'Failed to fetch Client List: ' . $ex->getMessage()]);
     }
 
-}// Handle unknown routes
+}
+elseif (strpos($requestUri,'/api/clientvisit_ad/')===0 && $requestMethod === 'GET') {
+    $clientid = explode('/', $requestUri)[3];
+    if (!is_numeric($clientid)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid staff ID']);
+        exit();
+    }
+    $sql = 'SELECT visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.doctor_id =?';
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$clientid]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(201);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
+    }
+}
+// Handle unknown routes
+
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);

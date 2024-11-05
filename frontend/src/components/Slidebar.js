@@ -219,7 +219,7 @@ const Slidebar = ({ role }) => {
           <i className="bi bi-card-heading icon-red"></i> {!isCollapsed && "Coupon Ledger"}
         </a>
       </li>
-      <li className="nav-item">
+      {/*<li className="nav-item">
         <a
           href="#"
           className="nav-link link-dark"
@@ -227,7 +227,7 @@ const Slidebar = ({ role }) => {
         >
           <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Bonus Ledger"}
         </a>
-      </li>
+      </li>*/}
       <li className="nav-item">
         <a
           href="#"
@@ -245,43 +245,63 @@ const Slidebar = ({ role }) => {
         >
           <i className="bi bi-person-circle icon-pink"></i> {!isCollapsed && "Profile Settings"}
         </a>
-      </li>
+      </li>      
     </>
   );
-
-  // const renderVsoMenu = () => (
-  //   <>
-  //     <li className="nav-item">
-  //       <a href="#" className="nav-link link-dark" onClick={() => navigate('/vso-dashboard')}>
-  //         VSO Dashboard
-  //       </a>
-  //     </li>
-  //     <li className="nav-item" onClick={toggleMasterMenu}>
-  //       <a href="#" className="nav-link link-dark"><i className="bi bi-puzzle"></i> {!isCollapsed && 'Master'}</a>
-  //       {!isCollapsed && masterOpen && (
-  //         <ul className="nav flex-column ms-3">
-  //           <li className="nav-item"><a href="#" className="nav-link link-dark" onClick={() => navigate('/master/staff')}>Visit</a></li>
-  //           {/* <li className="nav-item"><a href="#" className="nav-link link-dark" onClick={() => navigate('/master/products')}>Products</a></li>
-  //           <li className="nav-item">
-  //                 <a href="#" className="nav-link link-dark" onClick={() => navigate('/master/mbacourse')}>
-  //                   Clients
-  //                 </a>
-  //               </li> */}
-  //         </ul>
-  //       )}
-  //     </li>
-  //     {/* Add more VSO-specific links */}
-  //   </>
-  // );
-
+  
+  
+const renderDoctorMenu=() =>(
+<>
+    <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          style={{backgroundColor:" #a6a6a6"}}
+          onClick={() => navigate("/doctor")}
+        >
+          <i className="bi bi-speedometer2"></i> {!isCollapsed && "Dashboard"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          style={{backgroundColor:" #a6a6a6"}}
+          onClick={() => navigate("/doctor_couponledger")}
+        >
+          <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Coupon Ledger"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          style={{backgroundColor:" #a6a6a6"}}
+          onClick={() => navigate("/doctor/visit")}
+        >
+          <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Visit Report"}
+        </a>
+      </li>
+      <li className="nav-item">
+        <a
+          href="#"
+          className="nav-link link-dark"
+          style={{backgroundColor:" #a6a6a6"}}
+          onClick={() => navigate("/doctor/profile")}
+        >
+          <i className="bi bi-journal-plus icon-green"></i> {!isCollapsed && "Profile Settings"}
+        </a>
+      </li>
+</>
+);
   const renderSidebarContent = () => {
     switch (role) {
       case "admin":
         return renderAdminMenu();
       case "VSO":
         return renderVsoMenu();
-      case "Doctor":
-        return <li>Doctor specific menu</li>;
+      case "doctor":
+        return renderDoctorMenu();
       case "manager":
         return <li>Manager specific menu</li>;
       default:

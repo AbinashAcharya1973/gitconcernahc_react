@@ -26,6 +26,10 @@ import VSOBonusLedger from './Views/VSO/VSOBonusLedg';
 import VSOStock from './Views/VSO/VSOStock';
 import VSOProfile from './Views/VSO/VSOProfile';
 import AdminProfile from './Views/Admin/AdminProfile';
+import DoctorDashboard from './Views/Doctor/Dashboard';
+import DoctorCouponLedger from './Views/Doctor/CouponLedger';
+import DoctorVisitList from './Views/Doctor/VisitList';
+import DoctorProfile from './Views/Doctor/Profile';
 import { UserContext, UserProvider } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,10 +80,14 @@ function MainApp() {
             <Route path="/vsoprofile" element={<VSOProfile userId={userId}/>}/>
           </Routes>
         );
-      case 'Doctor':
+      case 'doctor':
         return (
           <Routes>
             {/* Define Doctor-specific routes */}
+            <Route path="/doctor" element={<DoctorDashboard userId={userId}/>}/>
+            <Route path="/doctor_couponledger" element={<DoctorCouponLedger userId={userId}/>}/>
+            <Route path="/doctor/visit" element={<DoctorVisitList userId={userId}/>}/>
+            <Route path="/doctor/profile" element={<DoctorProfile userId={userId}/>}/>
           </Routes>
         );
       case 'Manager':
