@@ -1040,7 +1040,65 @@ elseif ($requestUri === '/api/updateproducts' && $requestMethod === 'POST') {
         echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
     }
 }
+<<<<<<< HEAD
 
+=======
+elseif (strpos($requestUri,'/api/getjuniorstafflist/')===0 && $requestMethod === 'GET'){
+    $parentid=explode('/',$requestUri)[3];
+    $sql = 'SELECT * FROM staffs where reporting_id='.$parentid;
+    try{
+        $stmt=$db->prepare($sql);
+        $stmt->execute();
+        $result=$stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(count($result)>0){
+            http_response_code(201);
+            echo json_encode($result);
+        }else{
+            http_response_code(404);
+            echo json_encode(['error' => 'No records found']);
+        }
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch Client List: ' . $ex->getMessage()]);
+    }
+
+}
+elseif (strpos($requestUri, '/api/getvisitbyvso') === 0 && $requestMethod === 'GET') {
+    // Extract the staff ID from the URL
+    $staffId = explode('/', $requestUri)[3];
+
+    // Validate staff ID
+    if (!is_numeric($staffId)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid staff ID']);
+        exit();
+    }
+    $sql = 'SELECT *,visit_head.fullname as fullname,staffs.fullname as staffname FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.staff_id =?';
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$staffId]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(201);
+            echo json_encode(['error' => 'No records found for the provided staff ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
+    }
+}
+>>>>>>> 720fa7591174afe2c36e9dd8f78cd9eaf122e732
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);
