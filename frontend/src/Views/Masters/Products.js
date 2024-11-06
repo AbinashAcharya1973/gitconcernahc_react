@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Container, Row, Col, Modal, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import AddProduct from './Forms/AddProduct'; // Import the AddProduct form component
+import EditProduct from "./Forms/EditProduct";
 
 const Products = () => {
   const [visible, setVisible] = useState(false);
@@ -140,7 +141,7 @@ const Products = () => {
                     <td>{item.bonous}</td>
                     <td>{item.settlementpoints}</td>
                     <td>{item.samplePoints}</td>
-                    {/* <td>{item.Action}</td> */}
+                    {<td>{item.Action}</td>}
                   </tr>
                 ))
               ) : (
@@ -165,7 +166,7 @@ const Products = () => {
           {type === "Add" ? (
             <AddProduct close={onClose} fetchData={fetchData} />
           ) : (
-            <p>Form for Editing Product</p> // Replace with the Edit form when available
+            <EditProduct product={item} close={onClose} fetchData={fetchData} /> // Replace with the Edit form when available
           )}
         </Modal.Body>
       </Modal>

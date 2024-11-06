@@ -1013,7 +1013,33 @@ elseif (strpos($requestUri,'/api/clientvisit_ad/')===0 && $requestMethod === 'GE
     }
 }
 // Handle unknown routes
-
+elseif ($requestUri === '/api/updateproducts' && $requestMethod === 'POST') {
+    $productData = getPostData();
+    if (!isset($productData['id'], $productData['bonous'],$productData['points'],$productData['points_on_sample'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid data provided']);
+        return;
+    }
+    $product_id=$productData['id'];
+    $points=$productData['points'];
+    $bonus=$productData['bonous'];
+    $ps=$productData['points_on_sample'];
+    $ponsettlement=$productData['points_on_settlement'];
+    $pname=$productData['product_name'];
+    $ptype=$productData['product_type'];
+    //echo $product_id;echo $stock_point_holder;
+    try{
+        $updateproduct='update products set product_type=?,product_name=?,points=?,bonous=?,points_on_settlement=?,points_on_sample=? where id=?';
+        $stmt = $db->prepare($updateproduct);
+        $stmt->execute([$ptype,$pname,$points,$bonus,$ponsettlement,$ps,$product_id]);                
+        http_response_code(201);
+        echo json_encode(['message' => 'Product updated successfully']);        
+                
+    }catch(PDOException $ex){
+        http_response_code(500);
+        echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
+    } // Collect raw POST data
+}
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);
