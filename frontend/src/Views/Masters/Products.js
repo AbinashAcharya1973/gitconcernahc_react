@@ -56,7 +56,8 @@ const Products = () => {
     "Points",
     "Bonous",
     "Setllement Points",
-    "Sample Points"
+    "Sample Points",
+    "Action"
   ];
 
   const finalData = data?.map((item, index) => {
