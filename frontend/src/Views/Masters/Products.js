@@ -54,7 +54,7 @@ const Products = () => {
     "Type",
     "Name",
     "Points",
-    "Bonous",
+    "Bonus",
     "Setllement Points",
     "Sample Points"
   ];
@@ -65,7 +65,7 @@ const Products = () => {
       type: item.product_type, // type
       name: item.product_name, // name
       points: item.points,
-      bonous: item.bonous,
+      bonus: item.bonous,
       stock: item.stock,
       samplePoints: item.points_on_sample,
       settlementpoints: item.points_on_settlement,
@@ -138,7 +138,7 @@ const Products = () => {
                     <td>{item.type}</td>
                     <td>{item.name}</td>
                     <td>{item.points}</td>
-                    <td>{item.bonous}</td>
+                    <td>{item.bonus}</td>
                     <td>{item.settlementpoints}</td>
                     <td>{item.samplePoints}</td>
                     {<td>{item.Action}</td>}

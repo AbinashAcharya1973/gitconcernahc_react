@@ -53,7 +53,7 @@ const CouponLedgerView = ({ clientId }) => {
   const { closingDr, closingCr } = getClosingBalance(totalDr, totalCr);
   return (
     <Container>      
-      {error && <Alert variant="danger">Error: {error}</Alert>}
+      {/*{error && <Alert variant="danger">Error: {error}</Alert>}*/}
       <Table striped bordered hover>
         <thead>
           <tr>
