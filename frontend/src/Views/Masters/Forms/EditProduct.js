@@ -77,7 +77,7 @@ const EditProduct = ({ product, close, fetchData }) => {
       <Form.Group controlId="points">
         <Form.Label>Points</Form.Label>
         <Form.Control
-          type="number"
+          type="text"
           name="points"
           value={formData.points}
           onChange={handleChange}
@@ -87,7 +87,7 @@ const EditProduct = ({ product, close, fetchData }) => {
       <Form.Group controlId="bonus">
         <Form.Label>Bonus</Form.Label>
         <Form.Control
-          type="number"
+          type="text"
           name="bonous"
           value={formData.bonous}
           onChange={handleChange}
@@ -97,7 +97,7 @@ const EditProduct = ({ product, close, fetchData }) => {
       <Form.Group controlId="settlementPoints">
         <Form.Label>Settlement Points</Form.Label>
         <Form.Control
-          type="number"
+          type="text"
           name="points_on_settlement"
           value={formData.points_on_settlement}
           onChange={handleChange}
@@ -107,7 +107,7 @@ const EditProduct = ({ product, close, fetchData }) => {
       <Form.Group controlId="samplePoints">
         <Form.Label>Sample Points</Form.Label>
         <Form.Control
-          type="number"
+          type="text"
           name="points_on_sample"
           value={formData.points_on_sample}
           onChange={handleChange}
