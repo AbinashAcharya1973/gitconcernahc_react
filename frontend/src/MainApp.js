@@ -35,6 +35,7 @@ import ManagerProfile from './Views/Manager/Profile';
 import ManagerVisitReport from './Views/Manager/VisitReport';
 import ManagerStockReport from './Views/Manager/StockView';
 import ManagerCouponLedger from './Views/Manager/CouponLedger';
+import VisitDetailsPage from './components/VisitDetailsPage';
 import { UserContext, UserProvider } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -71,6 +72,7 @@ function MainApp() {
           <Route path="/reports/stock_report" element={<StockReport/>} />
           <Route path="/reports/visit_report" element={<VisitReport/>} />
           <Route path="/admin/profile" element={<AdminProfile userId={userId}/>} />
+          <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />
           </Routes>
         );
       case 'VSO':
@@ -82,7 +84,8 @@ function MainApp() {
             <Route path="/vsocouponledg" element={<VSOCouponLedger userId={userId}/>}/>
             <Route path="/vsobonusledg" element={<VSOBonusLedger userId={userId}/>}/>
             <Route path="/vsostock" element={<VSOStock userId={userId}/>}/>
-            <Route path="/vsoprofile" element={<VSOProfile userId={userId}/>}/>
+            <Route path="/vsoprofile" element={<VSOProfile userId={userId}/>}/> 
+            <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />           
           </Routes>
         );
       case 'doctor':
@@ -93,6 +96,7 @@ function MainApp() {
             <Route path="/doctor_couponledger" element={<DoctorCouponLedger userId={userId}/>}/>
             <Route path="/doctor/visit" element={<DoctorVisitList userId={userId}/>}/>
             <Route path="/doctor/profile" element={<DoctorProfile userId={userId}/>}/>
+            <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />
           </Routes>
         );
       case 'manager':
@@ -104,6 +108,7 @@ function MainApp() {
             <Route path="/manager/stockreport" element={<ManagerStockReport userId={userId}/>}/>
             <Route path="/manager/couponledger" element={<ManagerCouponLedger userId={userId}/>}/>
             <Route path="/manager/profile" element={<ManagerProfile userId={userId}/>}/>
+            <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />
           </Routes>
         );
       default:

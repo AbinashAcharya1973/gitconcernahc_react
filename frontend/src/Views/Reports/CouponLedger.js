@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Table, Container, Spinner, Alert, Dropdown, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const CouponLedger = () => {
   const [ledgerData, setLedgerData] = useState([]);
@@ -9,7 +10,10 @@ const CouponLedger = () => {
   const [errorLedger, setErrorLedger] = useState(null);
   const [errorStaff, setErrorStaff] = useState(null);
   const [selectedStaffId, setSelectedStaffId] = useState("");
-
+  const navigate = useNavigate();
+  const handleViewDetails = (visitId) => {
+    navigate(`/visitdetails/${visitId}`);
+  };
   // Fetch Coupon Ledger data by staff ID
   const fetchLedgerData = async (id) => {
     try {
@@ -141,6 +145,7 @@ return (
                       <th>Particulars</th>
                       <th>Dr</th>
                       <th>Cr</th>
+                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -152,6 +157,7 @@ return (
                           <td>{entry.particulars}</td> {/* Particulars */}
                           <td>{entry.dr}</td> {/* Debit */}
                           <td>{entry.cr}</td> {/* Credit */}
+                          <td><button onClick={() => handleViewDetails(entry.visit_id)}>Details</button></td>
                         </tr>
                       ))
                     ) : (

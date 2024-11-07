@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Table, Alert, Container } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const CouponLedgerView = ({ clientId }) => {
   const [ledgerData, setLedgerData] = useState([]);
   const [error, setError] = useState(null);
-
+  const navigate = useNavigate();
+  const handleViewDetails = (visitId) => {
+    navigate(`/visitdetails/${visitId}`);
+  };
   useEffect(() => {
     // Fetch ledger data for the specified client
     const fetchLedgerData = async () => {
@@ -60,7 +64,8 @@ const CouponLedgerView = ({ clientId }) => {
             <th>Date</th>
             <th>Description</th>
             <th>Debit</th>
-            <th>Credit</th>            
+            <th>Credit</th>    
+            <th></th>        
           </tr>
         </thead>
         <tbody>
@@ -70,7 +75,8 @@ const CouponLedgerView = ({ clientId }) => {
                 <td>{entry.tdate}</td>
                 <td>{entry.particulars}</td>
                 <td>{entry.dr}</td>
-                <td>{entry.cr}</td>                
+                <td>{entry.cr}</td> 
+                <td><button onClick={() => handleViewDetails(entry.visit_id)}>Details</button></td>               
               </tr>
             ))
           ) : (

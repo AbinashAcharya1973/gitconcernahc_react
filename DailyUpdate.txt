@@ -1,2 +1,5 @@
 //Abhay
 1.Inside 
+/////Abinash///
+1. All View Should be divided to pages, each page would contain 10 or 15 records
+2. Export to excel and PDF print option should be there.
