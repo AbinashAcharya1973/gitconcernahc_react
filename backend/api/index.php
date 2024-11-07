@@ -626,7 +626,7 @@ $userid = explode('/', $requestUri)[3];
         echo json_encode(['error' => 'Username not provided']);
         exit();
     }
-    $sql = 'SELECT * FROM stock where stock_holder_id =?';
+    $sql = 'SELECT * FROM stock inner join products on stock.product_id=products.id where stock.stock_holder_id =?';
     $stmt=$db->prepare($sql);
     $stmt->execute([$userid]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -707,7 +707,7 @@ elseif (strpos($requestUri, '/api/getcouponledger/') === 0 && $requestMethod ===
     }
 
     // Prepare the SQL query to fetch data from coupon_ledger for the given staff ID
-    $sql = 'SELECT * FROM coupon_ledger WHERE staff_id = ?';
+    $sql = 'SELECT * FROM coupon_ledger WHERE client_id = ?';
     
     try {
         // Execute the query
@@ -827,7 +827,7 @@ elseif (strpos($requestUri, '/api/getvisitbystaff') === 0 && $requestMethod === 
         echo json_encode(['error' => 'Invalid staff ID']);
         exit();
     }
-    $sql = 'SELECT visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.staff_id =?';
+    $sql = 'SELECT visit_head.*,visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.staff_id =?';
     try {
         // Execute the query
         $stmt = $db->prepare($sql);
@@ -853,7 +853,7 @@ elseif (strpos($requestUri, '/api/getvisitbystaff') === 0 && $requestMethod === 
     }
 }
 //Password Update
-elseif (strpos($requestUri, '/api/update-password') === 0 && $requestMethod === 'GET') {
+elseif (strpos($requestUri, '/api/update-password') === 0 && $requestMethod === 'POST') {
     // Extract the staff ID from the URL
     $updateinfo = getPostData();
     $staffId = $updateinfo['userId'];
@@ -879,7 +879,6 @@ elseif (strpos($requestUri, '/api/update-password') === 0 && $requestMethod === 
         echo json_encode(['error' => 'Failed to Update Password: ' . $ex->getMessage()]);
     }    
 }
-//get coupon ledger closing balance
 elseif (strpos($requestUri, '/api/couponbalance') === 0 && $requestMethod === 'GET') {
     // Extract the staff ID from the URL
     // Get the client ID from the request
@@ -987,7 +986,7 @@ elseif (strpos($requestUri,'/api/clientvisit_ad/')===0 && $requestMethod === 'GE
         echo json_encode(['error' => 'Invalid staff ID']);
         exit();
     }
-    $sql = 'SELECT visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.doctor_id =?';
+    $sql = 'SELECT visit_head.*,visit_head.date as v_date,visit_head.time as v_time,visit_head.fullname as docname,staffs.fullname as sname,visit_head.total_coupon_points as tcpoints,visit_head.total_settlement_points as tsp,visit_head.total_coupon_bonus_points as tcbp FROM visit_head inner join staffs on visit_head.staff_id=staffs.id WHERE visit_head.doctor_id =?';
     try {
         // Execute the query
         $stmt = $db->prepare($sql);
@@ -1012,37 +1011,34 @@ elseif (strpos($requestUri,'/api/clientvisit_ad/')===0 && $requestMethod === 'GE
         echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
     }
 }
-// Handle unknown routes
+
 elseif ($requestUri === '/api/updateproducts' && $requestMethod === 'POST') {
-    header('Content-Type: application/json'); // Ensures JSON response
     $productData = getPostData();
-    if (!isset($productData['id'], $productData['bonous'], $productData['points'], $productData['points_on_sample'], $productData['points_on_settlement'])) {
+    if (!isset($productData['id'], $productData['bonous'],$productData['points'],$productData['points_on_sample'])) {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid data provided']);
         return;
     }
-    $product_id = $productData['id'];
-    $points = $productData['points'];
-    $bonus = $productData['bonous'];
-    $ps = $productData['points_on_sample'];
-    $ponsettlement = $productData['points_on_settlement'];
-    $pname = $productData['product_name'];
-    $ptype = $productData['product_type'];
-
-    try {
-        $updateproduct = 'UPDATE products SET product_type = ?, product_name = ?, points = ?, bonous = ?, points_on_settlement = ?, points_on_sample = ? WHERE id = ?';
+    $product_id=$productData['id'];
+    $points=$productData['points'];
+    $bonus=$productData['bonous'];
+    $ps=$productData['points_on_sample'];
+    $ponsettlement=$productData['points_on_settlement'];
+    $pname=$productData['product_name'];
+    $ptype=$productData['product_type'];
+    //echo $product_id;echo $stock_point_holder;
+    try{
+        $updateproduct='update products set product_type=?,product_name=?,points=?,bonous=?,points_on_settlement=?,points_on_sample=? where id=?';
         $stmt = $db->prepare($updateproduct);
-        $stmt->execute([$ptype, $pname, $points, $bonus, $ponsettlement, $ps, $product_id]);                
-        http_response_code(200);
+        $stmt->execute([$ptype,$pname,$points,$bonus,$ponsettlement,$ps,$product_id]);              
+        http_response_code(201);
         echo json_encode(['message' => 'Product updated successfully']);        
-    } catch (PDOException $ex) {
+                
+    }catch(PDOException $ex){
         http_response_code(500);
         echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
     }
 }
-<<<<<<< HEAD
-
-=======
 elseif (strpos($requestUri,'/api/getjuniorstafflist/')===0 && $requestMethod === 'GET'){
     $parentid=explode('/',$requestUri)[3];
     $sql = 'SELECT * FROM staffs where reporting_id='.$parentid;
@@ -1098,7 +1094,40 @@ elseif (strpos($requestUri, '/api/getvisitbyvso') === 0 && $requestMethod === 'G
         echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
     }
 }
->>>>>>> 720fa7591174afe2c36e9dd8f78cd9eaf122e732
+elseif (strpos($requestUri, '/api/getvisitdetails') === 0 && $requestMethod === 'GET') {
+	$visitId = explode('/', $requestUri)[3];
+// Validate Visit ID
+    if (!is_numeric($visitId)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid Visit ID']);
+        exit();
+    }
+    $sql = 'SELECT visit_id as VID,product_id as PID,transaction_group as description,quantity as qty,points as points,bonus as bonus,product_name as product from visit_details WHERE visit_id =?';
+    try {
+        // Execute the query
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$visitId]);
+        
+        // Fetch all results
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // If no results are found, return a 404 error
+        if (empty($results)) {
+            http_response_code(201);
+            echo json_encode(['error' => 'No records found for the provided visit ID']);
+            exit();
+        }
+
+        // Return the results as a JSON response
+        echo json_encode($results);
+
+    } catch (PDOException $e) {
+        // Handle any database errors
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to fetch visit data: ' . $e->getMessage()]);
+    }
+
+}
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);

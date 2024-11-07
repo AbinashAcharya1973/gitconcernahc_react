@@ -1,6 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { Button, Table,Form } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 const VisitReport = ({userId}) => {
     const [Staffs,setStaffs]=useState([]);
     const [Clients,setClients]=useState([]);
@@ -10,6 +11,10 @@ const VisitReport = ({userId}) => {
     const [selectedStaffId,setselectedStaffId]=useState("");
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
+    const navigate = useNavigate();
+    const handleViewDetails = (visitId) => {
+        navigate(`/visitdetails/${visitId}`);
+    };
     const getStafflist  = async () =>{
         const response = await fetch(`http://localhost:80/api/getjuniorstafflist/${userId}`);
         const data = await response.json();
@@ -112,12 +117,14 @@ const VisitReport = ({userId}) => {
             <Table striped bordered hover>
                 <thead>
                     <tr>
+                        <th>VID</th>
                         <th>Date</th>
                         <th>Time</th>                        
                         <th>Client/Doctor</th>
                         <th>Coupon Collected</th>
                         <th>Coupon Settled</th>
                         <th>Sample Given</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,12 +132,14 @@ const VisitReport = ({userId}) => {
                     {FilteredVisit.length > 0 ? (
                         FilteredVisit.map((item, index) => (
                         <tr key={`${item.id}-${index}`}>
+                            <td>{item.id}</td>
                             <td>{item.date}</td>
                             <td>{item.time}</td>                            
                             <td>{item.fullname}</td>
                             <td>{item.total_coupon_collected}/{item.total_coupon_points}</td>
                             <td>{item.total_settlement}/{item.total_settlement_points}</td>
                             <td>{item.total_sample_given}/{item.total_sample_points}</td>
+                            <td><button onClick={() => handleViewDetails(item.id)}>Details</button></td>
                         </tr>
                         ))
                     ) : (

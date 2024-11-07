@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { Button, Table,Form } from 'react-bootstrap';
+import { useNavigate } from "react-router-dom";
 
-import { useParams } from 'react-router-dom';
 const VisitList = ({userId}) => {  
   const [visitData, setVisitData] = useState([]);
   const [Clients,setClients]=useState([]);
@@ -9,6 +9,10 @@ const VisitList = ({userId}) => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [filteredVisits, setFilteredVisits] = useState([]);
+  const navigate = useNavigate();
+  const handleViewDetails = (visitId) => {
+    navigate(`/visitdetails/${visitId}`);
+  };
   // const {userId} = useParams();
   
   const fetchClients = async () =>{
@@ -110,6 +114,7 @@ const fetchVisitByClient = async (cid) => {
                 <th>Total Coupon Collected</th>
                 <th>Total Settlement</th>
                 <th>Total Sample</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -123,6 +128,7 @@ const fetchVisitByClient = async (cid) => {
                   <td>{visit.total_coupon_collected}</td>
                   <td>{visit.total_settlement}</td>
                   <td>{visit.total_sample_given}</td>
+                  <td><button onClick={() => handleViewDetails(visit.id)}>Details</button></td>
                 </tr>
               ))
               ):(

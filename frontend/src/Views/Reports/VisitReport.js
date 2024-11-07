@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Container, Alert, Dropdown, Button, Form } from "react-bootstrap";
+import VisitDetails from "../../components/VisitDetails";
 
 const VisitReport = () => {
   const [visitData, setVisitData] = useState([]);
@@ -11,6 +12,7 @@ const VisitReport = () => {
   const [filteredVisits, setFilteredVisits] = useState([]);
   const [Clients,setClients]=useState([]);
   const [selectedClientId,setselectedClientId]=useState("");
+  const [selectedVisitId, setSelectedVisitId] = useState(null);
 
   const fetchStaffs = async () => {
     try {
@@ -163,10 +165,11 @@ const VisitReport = () => {
               </div>
             </div>
           </div>
-
+          <div className="overflow-auto" style={{ maxHeight: '400px' }}>
           <Table striped bordered hover className="mt-3">
             <thead>
               <tr>
+                <th>VID</th>
                 <th>Visit Date</th>
                 <th>Visit Time</th>
                 <th>Visited By</th>
@@ -174,12 +177,14 @@ const VisitReport = () => {
                 <th>Coupon Collected</th>
                 <th>Coupon Settled</th>
                 <th>Bonus</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {filteredVisits.length > 0 ? (
                 filteredVisits.map((item, index) => (
-                  <tr key={`${item.product_id}-${index}`}>
+                  <tr key={`${item.id}-${index}`}>
+                    <td>{item.id}</td>
                     <td>{item.v_date}</td>
                     <td>{item.v_time}</td>
                     <td>{item.sname}</td>
@@ -187,17 +192,21 @@ const VisitReport = () => {
                     <td>{item.tcpoints}</td>
                     <td>{item.tsp}</td>
                     <td>{item.tcbp}</td>
+                    <td><button onClick={() => setSelectedVisitId(item.id)}>Details</button></td>
+
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td colSpan="7">No data available</td>
                 </tr>
-              )}
+              )}              
             </tbody>
           </Table>
+          </div>
         </>
       )}
+      <VisitDetails visitId={selectedVisitId} />
     </Container>
   );
 };

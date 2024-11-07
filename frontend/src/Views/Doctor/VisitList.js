@@ -1,11 +1,16 @@
 import React, { useState,useEffect } from 'react';
 import { Table,Form } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 const VisitList = ({userId}) => {
     const [visitData, setVisitData] = useState([]);    
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [filteredVisits, setFilteredVisits] = useState([]);
+    const navigate = useNavigate();
+    const handleViewDetails = (visitId) => {
+      navigate(`/visitdetails/${visitId}`);
+    };
     useEffect(() => {
         const fetchVisitByClient = async (cid) => {
             try{    
@@ -63,12 +68,14 @@ const VisitList = ({userId}) => {
             <Table striped bordered hover>
             <thead>
               <tr>
+                <th>VID</th>
                 <th>Date</th>
                 <th>Visit Time</th>
                 <th>Visted By</th>
                 <th>Total Coupon Collected</th>
                 <th>Total Settlement</th>
                 <th>Total Sample</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -76,12 +83,14 @@ const VisitList = ({userId}) => {
               {Array.isArray(filteredVisits) && filteredVisits.length > 0 ? (
               filteredVisits.map((visit, index) => (
                 <tr key={index}>
+                  <td>{visit.id}</td>
                   <td>{visit.v_date}</td>
                   <td>{visit.v_time}</td>
                   <td>{visit.sname}</td>
                   <td>{visit.tcpoints}</td>
                   <td>{visit.tsp}</td>
                   <td>{visit.tcbp}</td>
+                  <td><button onClick={() => handleViewDetails(visit.id)}>Details</button></td>
                 </tr>
               ))
               ):(
