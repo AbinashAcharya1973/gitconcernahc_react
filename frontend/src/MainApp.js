@@ -56,6 +56,7 @@ function MainApp() {
   const renderRoutesForRole = (role) => {
     switch (role) {
       case 'admin':
+      case 'Administrator':
         return (
           <Routes>
           <Route path="/admin_dashboard" element={<AdminDashboard />} />
@@ -75,6 +76,7 @@ function MainApp() {
           <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />
           </Routes>
         );
+      case 'vso':
       case 'VSO':
         return (
           <Routes>
@@ -88,6 +90,7 @@ function MainApp() {
             <Route path="/visitdetails/:visitId" element={<VisitDetailsPage />} />           
           </Routes>
         );
+      case  'Doctor':
       case 'doctor':
         return (
           <Routes>
@@ -100,6 +103,7 @@ function MainApp() {
           </Routes>
         );
       case 'manager':
+      case 'Manager':
         return (
           <Routes>
             {/* Define Manager-specific routes */}

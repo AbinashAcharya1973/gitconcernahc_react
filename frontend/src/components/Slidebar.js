@@ -348,12 +348,16 @@ const renderManagerMenu = () =>(
   const renderSidebarContent = () => {
     switch (role) {
       case "admin":
+      case "Administrator":
         return renderAdminMenu();
       case "VSO":
+      case "vso":
         return renderVsoMenu();
       case "doctor":
+      case "Doctor":
         return renderDoctorMenu();
       case "manager":
+      case "Manager":
         return renderManagerMenu();
       default:
         return null;
