@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Table, Container, Row, Col, Card } from 'react-bootstrap'
 import { Modal, Button } from 'react-bootstrap';
 import AddStaff from './Forms/AddStaff'
+import EditStaff from './Forms/EditStaff';
 
 const SelectDropdown = ({ label, name, value, onChange, options }) => {
   return (
@@ -97,7 +98,7 @@ const Staff = () => {
     ? data.filter((item) => item.designation.toLowerCase() === formData.usertype.toLowerCase())
     : data;
 
-  const columns = ['Id', 'Designation', 'Code', 'Fullname', 'Mobile', 'Reporting To'];
+  const columns = ['Id', 'Designation', 'Code', 'Fullname', 'Mobile', 'Reporting To','Action'];
 
   const finalData = filteredData?.map((item, index) => {
     const reportingStaff = data.find(staff => staff.id === item.reporting_id);
@@ -135,7 +136,7 @@ const Staff = () => {
           <Card.Header className="bg-primary text-light">
             <h5 className="mb-0">STAFF</h5>
           </Card.Header>
-          <Card.Body className="w-100 p-1">
+          <Card.Body >
             <Row>
               <Col>
                 <SelectDropdown 
@@ -158,15 +159,15 @@ const Staff = () => {
               </Col>
             </Row>
 
-            <Table striped bordered hover responsive="light">
-              <thead>
+            <Table striped bordered hover responsive variant="light">
+              <thead style={{ backgroundColor: "black", color: "white" }}>
                 <tr>
                   {columns.map((col, index) => (
                     <th key={index} className="text-center bg-black h6 font-weight-bold py-1"
                       style={{
                         backgroundColor: "#00bcd4",
                         color: "white",
-                        width: index === 0 ? "30px" : index === 1 ? "50px" : "60px",
+                        width: index === 0 ? "50px" : index === 1 ? "100px" : "150px",
                       }}>
                       {col}
                     </th>
@@ -183,7 +184,7 @@ const Staff = () => {
                       <td>{item.fullname}</td>
                       <td>{item.mobile}</td>
                       <td>{item.reporting_to}</td>
-                      {/* <td>{item.Action}</td> */}
+                      <td>{item.Action}</td>
                     </tr>
                   ))
                 ) : (
@@ -203,7 +204,7 @@ const Staff = () => {
             <Modal.Title>{type === 'Add' ? 'Add Staff' : 'Edit Staff'}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <AddStaff close={onClose} fetchData={fetchData} />
+            {type === 'Add' ?(<AddStaff close={onClose} fetchData={fetchData} />):(<EditStaff staff={item} close={onClose} fetchData={fetchData} />)}   
           </Modal.Body>
         </Modal>
       </Container>

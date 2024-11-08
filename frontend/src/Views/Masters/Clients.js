@@ -74,6 +74,7 @@ const Clients = () => {
     "Mobile",
     "Address",
     // "Image",
+    "Action"
   ];
 
   // Mapping data to table rows
@@ -88,16 +89,16 @@ const Clients = () => {
           Mobile: item.client_mobile || "N/A",
           Address: item.client_address || "N/A",
           // Image: item.client_image || "No Image",
-          // Action: (
-          //   <div style={{ display: "flex", gap: "1rem" }}>
-          //     <Button variant="primary" onClick={() => handleEdit(item)}>
-          //       Edit
-          //     </Button>
-          //     <Button variant="danger" onClick={() => handleDelete(item.id)}>
-          //       Delete
-          //     </Button>
-          //   </div>
-          //  ),
+          Action: (
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <Button variant="primary" onClick={() => handleEdit(item)}>
+                Edit
+              </Button>
+              <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                Delete
+              </Button>
+            </div>
+           ),
         };
       })
     : [];
@@ -166,7 +167,7 @@ const Clients = () => {
                         "No Image"
                       )}
                     </td> */}
-                     {/* <td>{item.Action}</td>  */}
+                     <td>{item.Action}</td> 
                   </tr>
                 ))
               ) : (
