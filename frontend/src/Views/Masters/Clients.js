@@ -4,30 +4,20 @@ import {
   Container,
   Row,
   Col,
-  Modal,
   Button,
   Card,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AddClient from "./Forms/AddClient";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Clients = () => {
-  const [visible, setVisible] = useState(false);
-  const [type, setType] = useState("Add");
   const [data, setData] = useState([]);
-  const [item, setItem] = useState({});
   const navigate = useNavigate();
 
-  // Function to handle opening the modal for adding a new Client
+  // Function to navigate to the Add Client page
   const handleOpen = () => {
     navigate("/master/clients/add");
-  };
-
-  // Function to handle opening the modal for editing a client
-  const handleEdit = (item) => {
-    setType("Edit");
-    setItem(item);
-    setVisible(true);
   };
 
   // Function to handle deleting a client
@@ -40,11 +30,6 @@ const Clients = () => {
     }
   };
 
-  const onClose = () => {
-    setType("Add");
-    setVisible(false);
-  };
-
   // Fetch Client data from the backend
   const fetchData = async () => {
     try {
@@ -53,7 +38,6 @@ const Clients = () => {
         throw new Error("Network response was not ok");
       }
       const dataReceived = await response.json();
-      console.log(dataReceived); // Debugging: Ensure the data is received correctly
       setData(dataReceived);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -64,6 +48,32 @@ const Clients = () => {
     fetchData();
   }, []);
 
+  // Function to export table data to PDF
+  const exportPDF = () => {
+    const doc = new jsPDF();
+
+    doc.text("Client Records", 20, 10);
+
+    const columns = ["Id", "Type", "Code", "Name", "Email", "Mobile", "Address"];
+    const rows = data.map((item, index) => [
+      index + 1,
+      item.client_type || "N/A",
+      item.client_code || "N/A",
+      item.client_name || "N/A",
+      item.client_email || "N/A",
+      item.client_mobile || "N/A",
+      item.client_address || "N/A",
+    ]);
+
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 20,
+    });
+
+    doc.save("client_records.pdf");
+  };
+
   // Table columns
   const columns = [
     "Id",
@@ -73,54 +83,33 @@ const Clients = () => {
     "Email",
     "Mobile",
     "Address",
-    // "Image",
-    "Action"
+    "Action",
   ];
-
-  // Mapping data to table rows
-  const finalData = Array.isArray(data)
-    ? data.map((item, index) => {
-        return {
-          Id: item.id ||index+1 ,
-          Type: item.client_type || "N/A",
-          Code: item.client_code || "N/A",
-          Name: item.client_name || "N/A",
-          Email: item.client_email || "N/A",
-          Mobile: item.client_mobile || "N/A",
-          Address: item.client_address || "N/A",
-          // Image: item.client_image || "No Image",
-          Action: (
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <Button variant="primary" onClick={() => handleEdit(item)}>
-                Edit
-              </Button>
-              <Button variant="danger" onClick={() => handleDelete(item.id)}>
-                Delete
-              </Button>
-            </div>
-           ),
-        };
-      })
-    : [];
 
   return (
     <Container className="p-4">
-      <Card
-        className="mb-4 bg-light"
-        style={{ boxShadow: "4px 4px 10px black " }}
-      >
+      <Card className="mb-4 bg-light" style={{ boxShadow: "4px 4px 10px black " }}>
         <Card.Header className="bg-primary text-light">
           <h5 className="mb-0">CLIENT</h5>
         </Card.Header>
         <Card.Body>
           <Row>
             <Col>
+            <Button
+                style={{ backgroundColor: "#007bff", color: "white", marginRight: "20px" }}
+                onClick={handleOpen}
+                className="mb-3 bg-info"
+                size="vsm"
+              >
+                 Add Client
+              </Button>
               <Button
                 style={{ backgroundColor: "#00bcd4", color: "white" }}
-                onClick={handleOpen}
+                onClick={exportPDF}
                 className="mb-3 bg-success"
-                size="vsm">
-                Add Client
+                size="vsm"
+              >
+                Print
               </Button>
             </Col>
           </Row>
@@ -131,12 +120,11 @@ const Clients = () => {
                 {columns.map((col, index) => (
                   <th
                     key={index}
-                    className="text-center bg-black  h6 font-weight-bold py-1"
+                    className="text-center bg-black h6 font-weight-bold py-1"
                     style={{
                       backgroundColor: "#00bcd4",
                       color: "white",
-                      width:
-                        index === 0 ? "50px" : index === 1 ? "100px" : "150px",
+                      width: index === 0 ? "50px" : index === 1 ? "100px" : "150px",
                     }}
                   >
                     {col}
@@ -145,29 +133,31 @@ const Clients = () => {
               </tr>
             </thead>
             <tbody style={{ backgroundColor: "#17a1b0", color: "black" }}>
-              {finalData.length > 0 ? (
-                finalData.map((item, index) => (
+              {data.length > 0 ? (
+                data.map((item, index) => (
                   <tr
                     key={index}
                     style={{
                       backgroundColor: index % 2 === 0 ? "#cc7a00" : "#ffcc80",
                     }}
                   >
-                    <td><b>{item.Id}</b></td>
-                    <td>{item.Type}</td>
-                    <td>{item.Code}</td>
-                    <td>{item.Name}</td>
-                    <td>{item.Email}</td>
-                    <td>{item.Mobile}</td>
-                    <td>{item.Address}</td>
-                    {/* <td>
-                      {item.Image !== "No Image" ? (
-                        <img src={item.Image} alt="Client" width={50} />
-                      ) : (
-                        "No Image"
-                      )}
-                    </td> */}
-                     <td>{item.Action}</td> 
+                    <td><b>{index + 1}</b></td>
+                    <td>{item.client_type || "N/A"}</td>
+                    <td>{item.client_code || "N/A"}</td>
+                    <td>{item.client_name || "N/A"}</td>
+                    <td>{item.client_email || "N/A"}</td>
+                    <td>{item.client_mobile || "N/A"}</td>
+                    <td>{item.client_address || "N/A"}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "1rem" }}>
+                        <Button variant="primary" onClick={() => handleEdit(item)}>
+                          Edit
+                        </Button>
+                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
@@ -181,23 +171,7 @@ const Clients = () => {
           </Table>
         </Card.Body>
       </Card>
-
-      {/* Modal for Add/Edit Client */}
-      {/* <Modal show={visible} onHide={onClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {type === "Add" ? "Add Client" : "Edit Client"}
-          </Modal.Title>
-        {/* </Modal.Header> */}
-        {/* <Modal.Body>
-          {type === "Add" ? (
-            <AddClient onClose={onClose} />
-          ) : (
-            <p>Form for Editing Client</p> // Replace this with your EditClient form
-          )}
-        </Modal.Body>
-      </Modal> */}
-    </Container> 
+    </Container>
   );
 };
 
