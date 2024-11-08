@@ -360,7 +360,7 @@ const handleFormChange = (e) => {
         date: formData.date,
         time: formData.time,
         visitedTo: formData.visitedTo,
-        visitedToFullName: selectedDoctor ? selectedDoctor.client_name : "",  // Send full name of doctor
+        visitedToFullName: selectedDoctor ? `Dr ${selectedDoctor.client_name}` : "",  // Send full name of doctor
         totalQty: total.totalQty,
         totalPoints: total.totalPoints,
         totalBonus: total.totalBonus,
