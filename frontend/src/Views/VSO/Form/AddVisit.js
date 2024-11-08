@@ -16,6 +16,12 @@ const AddVisit = ({userId}) => {
 
   const [doctors, setDoctors] = useState([]);
   const [products, setProducts] = useState([]); // New state for products
+  const [CollectionPointPerUnit, setCollectionPointPerUnit] = useState(0);
+  const [CollectionBonusPerUnit, setCollectionBonusPerUnit] = useState(0);
+  const [SettlementPointPerUnit, setSettlementPointPerUnit] = useState(0);
+  const [SamplePointPerUnit, setSamplePointPerUnit] = useState(0);
+  const [currentDate, setCurrentDate] = useState('');
+  const [currentTime, setCurrentTime] = useState('');
 
   const [couponCollection, setCouponCollection] = useState({
     product_name: '',
@@ -94,6 +100,15 @@ const AddVisit = ({userId}) => {
         console.error("Error fetching products:", err);
       }
     };
+    const now = new Date();
+    const formattedDate = now.toISOString().split('T')[0];
+    const formattedTime = now.toTimeString().split(' ')[0].slice(0, 5);
+    setFormData({
+      ...formData,
+      date: formattedDate,
+      time: formattedTime,
+    });
+    
 
     fetchDoctors();
     fetchProducts(); // Fetch products on component mount
@@ -146,9 +161,12 @@ const handleFormChange = (e) => {
         setCouponCollection(prevCoupon => ({
           ...prevCoupon,
           product_name: selectedProduct.product_name, // Keep product ID as `productName`
-          points: selectedProduct.points,
-          bonous: selectedProduct.bonous
+          points: 0,
+          bonous: 0,
+          qty:0
         }));
+        setCollectionPointPerUnit(selectedProduct.points); //
+        setCollectionBonusPerUnit(selectedProduct.bonous);
       }
     } else {
       setCouponCollection({
@@ -168,9 +186,11 @@ const handleFormChange = (e) => {
         setCouponSettlement(prevCoupon => ({
           ...prevCoupon,
           product_name: selectedProduct.product_name, // Keep product ID as `productName`
-          points: selectedProduct.points_on_settlement,
+          points: 0,
+          qty:0
           // bonous: selectedProduct.bonous
         }));
+        setSettlementPointPerUnit(selectedProduct.points_on_settlement);
       }
     } else {
       setCouponSettlement({
@@ -186,10 +206,12 @@ const handleFormChange = (e) => {
       if (selectedProduct) {
         setProductSample(prevCoupon => ({
           ...prevCoupon,
-          product_name: selectedProduct.product_name, // Keep product ID as `productName`
-          points: selectedProduct.points
+          product_name: selectedProduct.points_on_sample, // Keep product ID as `productName`
+          points: 0,
+          qty:0
           //bonous: selectedProduct.bonous
         }));
+        setSamplePointPerUnit(selectedProduct.points_on_sample);
       }
     }else{
       setProductSample({
@@ -198,14 +220,14 @@ const handleFormChange = (e) => {
       });
     }
   };
-  const handleQtyChange = (e) => {
+  const handleCollectionQtyChange = (e) => {
     const qty = e.target.value;
     setCouponCollection(prevCoupon => ({
       ...prevCoupon,
       // product_name:couponCollection.product_name,
       qty: qty,
-      points: qty * couponCollection.points, // Multiply the quantity by the bonus point
-      bonous: qty * couponCollection.bonous 
+      points: qty * CollectionPointPerUnit, // Multiply the quantity by the bonus point
+      bonous: qty * CollectionBonusPerUnit
     }));    
     
   };
@@ -217,7 +239,7 @@ const handleFormChange = (e) => {
       ...prevCoupon,
       // product_name:couponCollection.product_name,
       qty: qty,
-      points: qty * couponSettlement.points, // Multiply the quantity by the bonus point
+      points: qty * SettlementPointPerUnit, // Multiply the quantity by the bonus point
       //bonous: qty * couponSettlement.bonous 
     }));
   };
@@ -228,7 +250,7 @@ const handleFormChange = (e) => {
       ...prevCoupon,
       // product_name:couponCollection.product_name,
       qty: qty,
-      points: qty * productSample.points, // Multiply the quantity by the bonus point
+      points: qty * SamplePointPerUnit, // Multiply the quantity by the bonus point
       //bonous: qty * couponSettlement.bonous
     }));
   };
@@ -427,7 +449,14 @@ const handleFormChange = (e) => {
           totalPoints1: 0,
           // totalBonus1: totalSettlement.totalBonus1 + parseInt(couponSettlement.bonous)
         });
+        setCouponSettlement({
+          totalQty1: 0,
+          totalPoints1: 0,
+          // totalBonus1: totalSettlement.totalBonus1 + parseInt(couponSettlement.bonous)
+        });
         setPointSummary({
+          OpeningPoints: 0,
+          CollectedPoints: 0,
           SettledPoints:0,
           ClosingPoints: 0,
         });
@@ -436,6 +465,10 @@ const handleFormChange = (e) => {
           totalPoints2:0,
           // totalBonus2: totalSampleGiven.totalBonus2 + parseInt(productSample.bonous)
         });
+        setProductSample({
+          qty:0,
+          points:0,
+        })
         setTotalGift({
           totalQty: 0,      
           // totalBonus3: totalGift.totalBonus3 + parseInt(gift.bonous)
@@ -498,7 +531,8 @@ const handleFormChange = (e) => {
               <div class="text-primary"><strong>COUPON COLLECTION</strong></div>
             </Accordion.Header>
             <Accordion.Body>
-              <Form.Group className="mb-3">
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Product Name</Form.Label>
                 <Form.Control
                   as="select"
@@ -515,28 +549,49 @@ const handleFormChange = (e) => {
                   ))}
                 </Form.Control>
               </Form.Group>
-
-              <Form.Group className="mb-3">
+              
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Qty</Form.Label>
                 <Form.Control
                   type="text"
                   name="qty"
                   value={couponCollection.qty}
-                  onChange={handleQtyChange}
+                  onChange={handleCollectionQtyChange}
                 />
               </Form.Group>
-
-              <Form.Group className="mb-3">
+              </div>
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
+                <Form.Label>Point Per Unit</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="qty"
+                  value={CollectionPointPerUnit}                  
+                />
+              </Form.Group>
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Points</Form.Label>
                 <Form.Control
                   type="text"
                   name="bonusQty"
                   value={couponCollection.points}
                   readOnly
+                />              
+              </Form.Group>
+              </div>
+            
+              <div className='row'>
+              <Form.Group className="mb-3 col-md-6">
+                <Form.Label>Bonus Per Unit</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="qty"
+                  value={CollectionBonusPerUnit}
+                  readOnly                  
                 />
               </Form.Group>
-
-              <Form.Group className="mb-3">
+              
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Bonus Points</Form.Label>
                 <Form.Control
                   type="text"
@@ -545,10 +600,12 @@ const handleFormChange = (e) => {
                   readOnly
                 />
               </Form.Group>
-
-              <Button variant="success" onClick={handleAddCouponCollection}>
+              </div>
+              <div className="text-center">
+              <Button variant="primary" onClick={handleAddCouponCollection}>
                 Add List
               </Button>
+              </div>
 
               {formData.couponCollectionList.length > 0 && (
                 <Table striped bordered hover className="mt-3">
@@ -589,7 +646,8 @@ const handleFormChange = (e) => {
               <div class="text-success"><strong>COUPON SETTLEMENT</strong></div>
             </Accordion.Header>
             <Accordion.Body>
-              <Form.Group className="mb-3">
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Product Name</Form.Label>
                 <Form.Control
                   as="select"
@@ -607,7 +665,7 @@ const handleFormChange = (e) => {
                 </Form.Control>
               </Form.Group>
 
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Qty</Form.Label>
                 <Form.Control
                   type="text"
@@ -616,8 +674,19 @@ const handleFormChange = (e) => {
                   onChange={handleSQtyChange}
                 />
               </Form.Group>
+              </div>
 
-              <Form.Group className="mb-3">
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
+                <Form.Label>Points Per Unit</Form.Label>
+                <Form.Control
+                  type="text"
+                  name=""
+                  value={SettlementPointPerUnit}
+                  readOnly
+                />
+              </Form.Group>
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Points</Form.Label>
                 <Form.Control
                   type="text"
@@ -626,6 +695,7 @@ const handleFormChange = (e) => {
                   readOnly
                 />
               </Form.Group>
+              </div>
 
               {/* <Form.Group className="mb-3">
                 <Form.Label>Bonus Points</Form.Label>
@@ -636,10 +706,11 @@ const handleFormChange = (e) => {
                   readOnly
                 />
               </Form.Group> */}
-
+              <div className="text-center">
               <Button variant="success" onClick={handleAddCouponSettlement}>
                 Add List
               </Button>
+              </div>
 
               {formData.couponSettlementList.length > 0 && (
                 <Table striped bordered hover className="mt-3">
@@ -689,7 +760,8 @@ const handleFormChange = (e) => {
               <div class="text-warning"><strong>SAMPLE</strong></div>
             </Accordion.Header>
             <Accordion.Body>
-              <Form.Group className="mb-3">
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Product Name</Form.Label>
                 <Form.Control
                   as="select"
@@ -707,7 +779,7 @@ const handleFormChange = (e) => {
                 </Form.Control>
               </Form.Group>
 
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Qty</Form.Label>
                 <Form.Control
                   type="text"
@@ -716,8 +788,18 @@ const handleFormChange = (e) => {
                   onChange={handleSampleQtyChange}
                 />
               </Form.Group>
-
-              <Form.Group className="mb-3">
+              </div>
+              <div className="row">
+              <Form.Group className="mb-3 col-md-6">
+                <Form.Label>Points Per Unit</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="bonusQty"
+                  value={SamplePointPerUnit}
+                  readOnly
+                />
+              </Form.Group>
+              <Form.Group className="mb-3 col-md-6">
                 <Form.Label>Points</Form.Label>
                 <Form.Control
                   type="text"
@@ -726,6 +808,7 @@ const handleFormChange = (e) => {
                   readOnly
                 />
               </Form.Group>
+              </div>
 
               {/* <Form.Group className="mb-3">
                 <Form.Label>Bonus Points</Form.Label>

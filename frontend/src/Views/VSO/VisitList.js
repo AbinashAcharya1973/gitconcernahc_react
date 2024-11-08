@@ -44,6 +44,7 @@ const VisitList = ({userId}) => {
   }, [fromDate, toDate, visitData]);
 
   const filterVisitsByDate = () => {
+    if(visitData.length>0){
     const filtered = visitData.filter(visit => {
       const visitDate = new Date(visit.date);
       const start = fromDate ? new Date(fromDate) : null;
@@ -52,6 +53,7 @@ const VisitList = ({userId}) => {
       return (!start || visitDate >= start) && (!end || visitDate <= end);
     });
     setFilteredVisits(filtered);
+  }
   };
 const handleSelectClients = (event) => {
   const clientId = event.target.value;
@@ -125,9 +127,9 @@ const fetchVisitByClient = async (cid) => {
                   <td>{visit.date}</td>
                   <td>{visit.time}</td>
                   <td>{visit.fullname}</td>
-                  <td>{visit.total_coupon_collected}</td>
-                  <td>{visit.total_settlement}</td>
-                  <td>{visit.total_sample_given}</td>
+                  <td>{visit.total_coupon_collected}/{visit.total_coupon_points}</td>
+                  <td>{visit.total_settlement}/{visit.total_settlement_points}</td>
+                  <td>{visit.total_sample_given}/{visit.total_sample_points}</td>
                   <td><button onClick={() => handleViewDetails(visit.id)}>Details</button></td>
                 </tr>
               ))
