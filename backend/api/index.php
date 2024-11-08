@@ -1128,6 +1128,41 @@ elseif (strpos($requestUri, '/api/getvisitdetails') === 0 && $requestMethod === 
     }
 
 }
+/////////////////Update Staff/////////////
+elseif ($requestUri === '/api/updatestaffs' && $requestMethod === 'POST') {
+    $staffData = getPostData();
+    
+    // Validate required data fields
+    if (!isset($staffData['id'], $staffData['code'], $staffData['designation'], $staffData['fullname'], $staffData['mobile'], $staffData['reporting_id'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid data provided']);
+        return;
+    }
+
+    // Assign variables from request data
+    $staff_id = $staffData['id'];
+    $code = $staffData['code'];
+    $designation = $staffData['designation'];
+    $fullname = $staffData['fullname'];
+    $mobile = $staffData['mobile'];
+    $reporting_id = $staffData['reporting_id'];
+
+    try {
+        // SQL query to update the staff record
+        $updatestaff = 'UPDATE staffs SET code = ?, designation = ?, fullname = ?, mobile = ?, reporting_id = ? WHERE id = ?';
+        $stmt = $db->prepare($updatestaff);
+        
+        // Execute the prepared statement with data
+        $stmt->execute([$code, $designation, $fullname, $mobile, $reporting_id, $staff_id]);
+        
+        http_response_code(201);
+        echo json_encode(['message' => 'Staff updated successfully']);
+        
+    } catch (PDOException $ex) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
+    }
+}
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);
