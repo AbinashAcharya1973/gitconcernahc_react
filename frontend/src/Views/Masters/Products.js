@@ -1,98 +1,117 @@
 import React, { useEffect, useState } from "react";
-import { Table, Container, Row, Col, Modal, Button, Card } from "react-bootstrap";
+import { Table, Container, Row, Col, Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AddProduct from './Forms/AddProduct'; // Import the AddProduct form component
-import EditProduct from "./Forms/EditProduct";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Products = () => {
-  const [visible, setVisible] = useState(false);
-  const [type, setType] = useState("Add");
   const [data, setData] = useState([]);
-  const [item, setItem] = useState({});
   const navigate = useNavigate();
 
-  // Function to handle opening the modal for adding a new product
+  // Assume "Printed By" info is stored in localStorage/sessionStorage
+  const printedBy = localStorage.getItem("userName") || "Admin"; // Replace with actual logic if needed
+  const currentDateTime = new Date();
+  const printedOn = currentDateTime.toLocaleString();
+
+  // Function to navigate to Add Product page
   const handleOpen = () => {
-    setType("Add");
-    setItem({});  // Ensure to reset item data when opening modal to add
-    setVisible(true);
+    navigate("/products/add");
   };
 
-  // Function to handle opening the modal for editing a product
+  // Function to navigate to Edit Product page with product data
   const handleEdit = (item) => {
-    setType("Edit");
-    setItem(item);
-    setVisible(true);
+    navigate(`/products/edit/${item.id}`, { state: { product: item } });
   };
 
-  // Function to handle deleting a product
-  const handleDelete = (id) => {
-    // Add API call to delete a product by id
-    // Example:
-    fetch(`/products/delete/${id}`, { method: 'DELETE' }).then(() => fetchData());
-  };
-
-  const onClose = () => {
-    setType("Add");
-    setVisible(false);
+  // Function to delete a product
+  const handleDelete = async (id) => {
+    try {
+      await fetch(`/products/delete/${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+    }
   };
 
   // Fetch product data from the backend
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:80/api/products`);
-      const dataReceive = await response.json();
-      console.log(dataReceive);
-      setData(dataReceive);
+      const response = await fetch("http://localhost:80/api/products");
+      const dataReceived = await response.json();
+      setData(dataReceived);
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
   };
 
+  // Function to export table data to PDF
+  const exportPDF = () => {
+    const doc = new jsPDF();
+  
+    // Set PDF title
+    doc.text("Product Records", 20, 10);
+
+    const columns = ["Id", "Type", "Name", "Points", "Bonus", "Settlement Points", "Sample Points"];
+    const rows = data.map((item, index) => [
+      index + 1,
+      item.product_type || "N/A",
+      item.product_name || "N/A",
+      item.points || "N/A",
+      item.bonous || "N/A",
+      item.points_on_settlement || "N/A",
+      item.points_on_sample || "N/A"
+    ]);
+
+    // Generate the table
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 20,
+      didDrawPage: (data) => {
+        const pageHeight = doc.internal.pageSize.height;
+        const printedBy = "Staff Name"; // Replace with dynamic name if needed
+        const printedOn = new Date().toLocaleString();
+  
+        // Footer text on every page
+        doc.setFontSize(10);
+        doc.text(`Printed By: ${printedBy}`, 20, pageHeight - 20);
+        doc.text(`Printed On: ${printedOn}`, 20, pageHeight - 10);
+      }
+    });
+  
+    // Save PDF file
+    doc.save("Product_Records.pdf");
+  };
   const columns = [
     "Id",
     "Type",
     "Name",
     "Points",
     "Bonus",
-    "Setllement Points",
+    "Settlement Points",
     "Sample Points",
     "Action"
   ];
 
-  const finalData = data?.map((item, index) => {
-    return {
-      id: item.id,
-      type: item.product_type, // type
-      name: item.product_name, // name
-      points: item.points,
-      bonus: item.bonous,
-      stock: item.stock,
-      samplePoints: item.points_on_sample,
-      settlementpoints: item.points_on_settlement,
-      Action: (
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="primary"
-            onClick={() => {
-              handleEdit(item);
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              handleDelete(item.id);
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    };
-  });
-  console.log(finalData);
+  const finalData = data.map((item, index) => ({
+    id: item.id,
+    type: item.product_type,
+    name: item.product_name,
+    points: item.points,
+    bonous: item.bonous,
+    settlementPoints: item.points_on_settlement,
+    samplePoints: item.points_on_sample,
+    Action: (
+      <div style={{ display: "flex", gap: "1rem" }}>
+        <Button variant="primary" onClick={() => handleEdit(item)}>
+          Edit
+        </Button>
+        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+          Delete
+        </Button>
+      </div>
+    )
+  }));
 
   useEffect(() => {
     fetchData();
@@ -100,12 +119,9 @@ const Products = () => {
 
   return (
     <Container>
-      <Card
-        className="mb-4 bg-light"
-        style={{ boxShadow: "4px 4px 10px black " }}
-      >
+      <Card className="mb-4 bg-light" style={{ boxShadow: "4px 4px 10px black " }}>
         <Card.Header className="bg-primary text-light">
-          <h5 className="mb-0">PRODUCT</h5>
+          <h5 className="mb-0">PRODUCTS</h5>
         </Card.Header>
         <Card.Body>
           <Row>
@@ -113,6 +129,9 @@ const Products = () => {
               <Button variant="success" onClick={handleOpen} className="mb-3">
                 Add Product
               </Button>
+              <Button variant="info" onClick={exportPDF} className="mb-3">
+              Print          
+               </Button>
             </Col>
           </Row>
 
@@ -120,14 +139,17 @@ const Products = () => {
             <thead style={{ backgroundColor: "black", color: "white" }}>
               <tr>
                 {columns.map((col, index) => (
-                  <th key={index} className="text-center bg-black  h6 font-weight-bold py-1"
-                  style={{
-                    backgroundColor: "#00bcd4",
-                    color: "white",
-                    width:
-                      index === 0 ? "50px" : index === 1 ? "100px" : "150px",
-                  }} // Adjust widths as needed
-                  >{col}</th>
+                  <th
+                    key={index}
+                    className="text-center h6 font-weight-bold py-1"
+                    style={{
+                      backgroundColor: "black",
+                      color: "white",
+                      width: index === 0 ? "50px" : index === 1 ? "100px" : "150px"
+                    }}
+                  >
+                    {col}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -139,10 +161,10 @@ const Products = () => {
                     <td>{item.type}</td>
                     <td>{item.name}</td>
                     <td>{item.points}</td>
-                    <td>{item.bonus}</td>
-                    <td>{item.settlementpoints}</td>
+                    <td>{item.bonous}</td>
+                    <td>{item.settlementPoints}</td>
                     <td>{item.samplePoints}</td>
-                    {<td>{item.Action}</td>}
+                    <td>{item.Action}</td>
                   </tr>
                 ))
               ) : (
@@ -156,21 +178,6 @@ const Products = () => {
           </Table>
         </Card.Body>
       </Card>
-
-      <Modal show={visible} onHide={onClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {type === "Add" ? "Add Product" : "Edit Product"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {type === "Add" ? (
-            <AddProduct close={onClose} fetchData={fetchData} />
-          ) : (
-            <EditProduct product={item} close={onClose} fetchData={fetchData} /> // Replace with the Edit form when available
-          )}
-        </Modal.Body>
-      </Modal>
     </Container>
   );
 };

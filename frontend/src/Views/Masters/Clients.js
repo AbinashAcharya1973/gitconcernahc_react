@@ -14,6 +14,11 @@ import "jspdf-autotable";
 const Clients = () => {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
+   
+  const printedBy = localStorage.getItem("userName") || "Admin"; // Replace with actual logic if needed
+  const currentDateTime = new Date();
+  const printedOn = currentDateTime.toLocaleString();
+
 
   // Function to navigate to the Add Client page
   const handleOpen = () => {
@@ -51,9 +56,11 @@ const Clients = () => {
   // Function to export table data to PDF
   const exportPDF = () => {
     const doc = new jsPDF();
-
+  
+    // Set PDF title
     doc.text("Client Records", 20, 10);
-
+  
+    // Define table columns and rows
     const columns = ["Id", "Type", "Code", "Name", "Email", "Mobile", "Address"];
     const rows = data.map((item, index) => [
       index + 1,
@@ -64,17 +71,28 @@ const Clients = () => {
       item.client_mobile || "N/A",
       item.client_address || "N/A",
     ]);
-
+  
+    // Add table to PDF
     doc.autoTable({
       head: [columns],
       body: rows,
       startY: 20,
+      didDrawPage: (data) => {
+        const pageHeight = doc.internal.pageSize.height;
+        const printedBy = "Staff Name"; // Replace with dynamic name if needed
+        const printedOn = new Date().toLocaleString();
+  
+        // Footer text on every page
+        doc.setFontSize(10);
+        doc.text(`Printed By: ${printedBy}`, 20, pageHeight - 20);
+        doc.text(`Printed On: ${printedOn}`, 20, pageHeight - 10);
+      }
     });
-
+  
+    // Save PDF file
     doc.save("client_records.pdf");
   };
-
-  // Table columns
+    // Table columns
   const columns = [
     "Id",
     "Type",
@@ -100,16 +118,14 @@ const Clients = () => {
                 onClick={handleOpen}
                 className="mb-3 bg-info"
                 size="vsm"
-              >
-                 Add Client
+              > Add Client
               </Button>
               <Button
                 style={{ backgroundColor: "#00bcd4", color: "white" }}
                 onClick={exportPDF}
                 className="mb-3 bg-success"
                 size="vsm"
-              >
-                Print
+              > Print
               </Button>
             </Col>
           </Row>
