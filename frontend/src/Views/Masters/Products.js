@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from "react";
-import { Table, Container, Row, Col, Button, Card } from "react-bootstrap";
+import { Table, Container, Row, Col, Button, Card, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 const Products = () => {
   const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20); // Default to 20 rows per page
   const navigate = useNavigate();
 
-  // Assume "Printed By" info is stored in localStorage/sessionStorage
-  const printedBy = localStorage.getItem("userName") || "Admin"; // Replace with actual logic if needed
-  const currentDateTime = new Date();
-  const printedOn = currentDateTime.toLocaleString();
+  const printedBy = localStorage.getItem("userName") || "Admin";
+  const printedOn = new Date().toLocaleString();
 
-  // Function to navigate to Add Product page
   const handleOpen = () => {
     navigate("/products/add");
   };
 
-  // Function to navigate to Edit Product page with product data
   const handleEdit = (item) => {
     navigate(`/products/edit/${item.id}`, { state: { product: item } });
   };
 
-  // Function to delete a product
   const handleDelete = async (id) => {
     try {
       await fetch(`/products/delete/${id}`, { method: "DELETE" });
@@ -33,7 +30,6 @@ const Products = () => {
     }
   };
 
-  // Fetch product data from the backend
   const fetchData = async () => {
     try {
       const response = await fetch("http://localhost:80/api/products");
@@ -44,11 +40,8 @@ const Products = () => {
     }
   };
 
-  // Function to export table data to PDF
   const exportPDF = () => {
     const doc = new jsPDF();
-  
-    // Set PDF title
     doc.text("Product Records", 20, 10);
 
     const columns = ["Id", "Type", "Name", "Points", "Bonus", "Settlement Points", "Sample Points"];
@@ -62,60 +55,43 @@ const Products = () => {
       item.points_on_sample || "N/A"
     ]);
 
-    // Generate the table
     doc.autoTable({
       head: [columns],
       body: rows,
       startY: 20,
       didDrawPage: (data) => {
         const pageHeight = doc.internal.pageSize.height;
-        const printedBy = "Staff Name"; // Replace with dynamic name if needed
-        const printedOn = new Date().toLocaleString();
-  
-        // Footer text on every page
         doc.setFontSize(10);
         doc.text(`Printed By: ${printedBy}`, 20, pageHeight - 20);
         doc.text(`Printed On: ${printedOn}`, 20, pageHeight - 10);
       }
     });
-  
-    // Save PDF file
+
     doc.save("Product_Records.pdf");
   };
-  const columns = [
-    "Id",
-    "Type",
-    "Name",
-    "Points",
-    "Bonus",
-    "Settlement Points",
-    "Sample Points",
-    "Action"
-  ];
-
-  const finalData = data.map((item, index) => ({
-    id: item.id,
-    type: item.product_type,
-    name: item.product_name,
-    points: item.points,
-    bonous: item.bonous,
-    settlementPoints: item.points_on_settlement,
-    samplePoints: item.points_on_sample,
-    Action: (
-      <div style={{ display: "flex", gap: "1rem" }}>
-        <Button variant="primary" onClick={() => handleEdit(item)}>
-          Edit
-        </Button>
-        <Button variant="danger" onClick={() => handleDelete(item.id)}>
-          Delete
-        </Button>
-      </div>
-    )
-  }));
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value > 0) {
+      setItemsPerPage(value);
+      setCurrentPage(1); // Reset to the first page
+    }
+  };
 
   return (
     <Container>
@@ -124,58 +100,96 @@ const Products = () => {
           <h5 className="mb-0">PRODUCTS</h5>
         </Card.Header>
         <Card.Body>
+        <div style={{ display: "flex", gap: "1rem" }}>
           <Row>
             <Col>
-              <Button variant="success" onClick={handleOpen} className="mb-3">
+                <Button variant="info" onClick={handleOpen} className="mb-3 bg-info" size="vsm">
                 Add Product
               </Button>
-              <Button variant="info" onClick={exportPDF} className="mb-3">
-              Print          
-               </Button>
+              <Button variant="success" onClick={exportPDF} className="mb-3" size="vsm">
+                Print
+              </Button>
             </Col>
+          </Row>
+      </div>
+
+          <Row className="mb-3 justify-content-end">
+  <Col xs="auto">
+    <Form.Group controlId="rowsPerPage">
+      <Form.Label>Rows Per Page:</Form.Label>
+      <Form.Control
+        as="select"
+        value={itemsPerPage}
+        onChange={handleItemsPerPageChange}
+      >
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </Form.Control>
+    </Form.Group>
+  </Col>
           </Row>
 
           <Table striped bordered hover responsive variant="light">
             <thead style={{ backgroundColor: "black", color: "white" }}>
               <tr>
-                {columns.map((col, index) => (
-                  <th
-                    key={index}
-                    className="text-center h6 font-weight-bold py-1"
-                    style={{
-                      backgroundColor: "black",
-                      color: "white",
-                      width: index === 0 ? "50px" : index === 1 ? "100px" : "150px"
-                    }}
-                  >
-                    {col}
-                  </th>
-                ))}
+                <th>Id</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Points</th>
+                <th>Bonus</th>
+                <th>Settlement Points</th>
+                <th>Sample Points</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {finalData.length > 0 ? (
-                finalData.map((item, index) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item, index) => (
                   <tr key={index}>
                     <td>{item.id}</td>
-                    <td>{item.type}</td>
-                    <td>{item.name}</td>
+                    <td>{item.product_type}</td>
+                    <td>{item.product_name}</td>
                     <td>{item.points}</td>
                     <td>{item.bonous}</td>
-                    <td>{item.settlementPoints}</td>
-                    <td>{item.samplePoints}</td>
-                    <td>{item.Action}</td>
+                    <td>{item.points_on_settlement}</td>
+                    <td>{item.points_on_sample}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "1rem" }}>
+                        <Button variant="primary" onClick={() => handleEdit(item)}>
+                          Edit
+                        </Button>
+                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={columns.length} className="text-center">
+                  <td colSpan="8" className="text-center">
                     No Products Found
                   </td>
                 </tr>
               )}
             </tbody>
           </Table>
+
+          <Row className="mt-3">
+            <Col className="text-center">
+              <Button variant="secondary" onClick={handlePreviousPage} disabled={currentPage === 1}>
+                Previous
+              </Button>
+              <span className="mx-3">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button variant="secondary" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Next
+              </Button>
+            </Col>
+          </Row>
         </Card.Body>
       </Card>
     </Container>

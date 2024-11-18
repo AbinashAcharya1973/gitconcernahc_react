@@ -373,11 +373,16 @@ const renderManagerMenu = () =>(
     <div
       className={`d-flex flex-column flex-shrink-0 p-4 bg-light ${isCollapsed ? "collapsed" : ""}`}
       style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
         width: isCollapsed ? "80px" : "250px",
         height: "100vh",
+        backgroundColor: "#f8f9fa",
+        overflowY: "auto",
+        boxShadow: "4px 0 10px rgba(0, 0, 0, 0.1)",
         transition: "width 0.3s",
-        boxShadow: "4px 4px 10px black",
-        position: "relative",
+        zIndex: 1000, // Ensure it overlays the main content
       }}
     >
       <button
