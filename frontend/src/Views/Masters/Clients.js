@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import {
   Table,
   Container,
@@ -8,6 +9,9 @@ import {
   Card,
   Modal
 } from "react-bootstrap";
+=======
+import { Table, Container, Row, Col, Button, Card, Form } from "react-bootstrap";
+>>>>>>> 77c6448efa0677a9aa19847803e63c0d3cbcc4a5
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -16,10 +20,19 @@ import EditClient from "./Forms/EditClient";
 
 const Clients = () => {
   const [data, setData] = useState([]);
+<<<<<<< HEAD
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState("Add");
   const [item, setItem] = useState({});
+=======
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+>>>>>>> 77c6448efa0677a9aa19847803e63c0d3cbcc4a5
   const navigate = useNavigate();
+   
+  const printedBy = localStorage.getItem("userName") || "Admin"; // Replace with actual logic if needed
+  const currentDateTime = new Date();
+  const printedOn = currentDateTime.toLocaleString();
 
   // Function to navigate to the Add Client page
   const handleOpen = () => {
@@ -60,13 +73,37 @@ const Clients = () => {
     fetchData();
   }, []);
 
+  // Pagination Logic
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value > 0) {
+      setItemsPerPage(value);
+      setCurrentPage(1);
+    }
+  };
+
   // Function to export table data to PDF
   const exportPDF = () => {
     const doc = new jsPDF();
-
+  
+    // Title for the PDF
     doc.text("Client Records", 20, 10);
-
+  
+    // Define columns for the table
     const columns = ["Id", "Type", "Code", "Name", "Email", "Mobile", "Address"];
+  
+    // Map the data into rows for the PDF
     const rows = data.map((item, index) => [
       index + 1,
       item.client_type || "N/A",
@@ -76,13 +113,40 @@ const Clients = () => {
       item.client_mobile || "N/A",
       item.client_address || "N/A",
     ]);
-
-    doc.autoTable({
-      head: [columns],
-      body: rows,
-      startY: 20,
-    });
-
+  
+    // Set the number of rows per page
+    const itemsPerPage = 20;
+  
+    // Function to generate a single page
+    const generatePage = (pageRows, startIndex, endIndex) => {
+      const pageData = pageRows.slice(startIndex, endIndex);
+  
+      doc.autoTable({
+        head: [columns],
+        body: pageData,
+        startY: 20,
+        didDrawPage: (data) => {
+          const pageHeight = doc.internal.pageSize.height;
+  
+          // Footer on each page
+          doc.setFontSize(10);
+          doc.text(`Printed By: ${printedBy}`, 20, pageHeight - 20);
+          doc.text(`Printed On: ${printedOn}`, 20, pageHeight - 10);
+  
+          // Page number
+          const pageNumber = doc.internal.getNumberOfPages();
+          doc.text(`Page ${pageNumber}`, doc.internal.pageSize.width - 40, pageHeight - 10);
+        },
+      });
+    };
+  
+    // Loop to generate pages
+    for (let i = 0; i < rows.length; i += itemsPerPage) {
+      if (i !== 0) doc.addPage();
+      generatePage(rows, i, i + itemsPerPage);
+    }
+  
+    // Save the PDF
     doc.save("client_records.pdf");
   };
 
@@ -108,18 +172,18 @@ const Clients = () => {
     <Container className="p-4">
       <Card className="mb-4 bg-light" style={{ boxShadow: "4px 4px 10px black " }}>
         <Card.Header className="bg-primary text-light">
-          <h5 className="mb-0">CLIENT</h5>
+          <h5 className="mb-0">CLIENTS</h5>
         </Card.Header>
         <Card.Body>
           <Row>
             <Col>
-            <Button
+              <Button
                 style={{ backgroundColor: "#007bff", color: "white", marginRight: "20px" }}
                 onClick={handleOpen}
                 className="mb-3 bg-info"
                 size="vsm"
               >
-                 Add Client
+                Add Client
               </Button>
               <Button
                 style={{ backgroundColor: "#00bcd4", color: "white" }}
@@ -129,6 +193,24 @@ const Clients = () => {
               >
                 Print
               </Button>
+            </Col>
+          </Row>
+
+          <Row className="mb-3 justify-content-end">
+            <Col xs="auto">
+              <Form.Group controlId="rowsPerPage">
+                <Form.Label>Rows Per Page:</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={itemsPerPage}
+                  onChange={handleItemsPerPageChange}
+                >
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </Form.Control>
+              </Form.Group>
             </Col>
           </Row>
 
@@ -151,8 +233,8 @@ const Clients = () => {
               </tr>
             </thead>
             <tbody style={{ backgroundColor: "#17a1b0", color: "black" }}>
-              {data.length > 0 ? (
-                data.map((item, index) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item, index) => (
                   <tr
                     key={index}
                     style={{
@@ -187,6 +269,20 @@ const Clients = () => {
               )}
             </tbody>
           </Table>
+
+          <Row className="mt-3">
+            <Col className="text-center">
+              <Button variant="secondary" onClick={handlePreviousPage} disabled={currentPage === 1}>
+                Previous
+              </Button>
+              <span className="mx-3">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button variant="secondary" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Next
+              </Button>
+            </Col>
+          </Row>
         </Card.Body>
       </Card>
 

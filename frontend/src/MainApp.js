@@ -39,7 +39,6 @@ import VisitDetailsPage from './components/VisitDetailsPage';
 import { UserContext, UserProvider } from './UserContext';
 import { useNavigate } from 'react-router-dom';
 
-
 function MainApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState('');
@@ -152,9 +151,7 @@ function MainApp() {
             </div>
           </>
         )}
-      </div>
-    
-    
+      </div>    
   );
 }
 

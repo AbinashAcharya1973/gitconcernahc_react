@@ -1,28 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Table, Container, Row, Col, Modal, Button, Card } from "react-bootstrap";
+import { Table, Container, Row, Col, Button, Card, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AddProduct from './Forms/AddProduct'; // Import the AddProduct form component
-import EditProduct from "./Forms/EditProduct";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Products = () => {
-  const [visible, setVisible] = useState(false);
-  const [type, setType] = useState("Add");
   const [data, setData] = useState([]);
-  const [item, setItem] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20); // Default to 20 rows per page
   const navigate = useNavigate();
 
-  // Function to handle opening the modal for adding a new product
+  const printedBy = localStorage.getItem("userName") || "Admin";
+  const printedOn = new Date().toLocaleString();
+
   const handleOpen = () => {
-    setType("Add");
-    setItem({});  // Ensure to reset item data when opening modal to add
-    setVisible(true);
+    navigate("/products/add");
   };
 
-  // Function to handle opening the modal for editing a product
   const handleEdit = (item) => {
-    setType("Edit");
-    setItem(item);
-    setVisible(true);
+    navigate(`/products/edit/${item.id}`, { state: { product: item } });
   };
 
   // Function to handle deleting a product
@@ -51,148 +47,168 @@ const Products = () => {
     }
   };
 
-  const onClose = () => {
-    setType("Add");
-    setVisible(false);
-  };
-
-  // Fetch product data from the backend
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://localhost:80/api/products`);
-      const dataReceive = await response.json();
-      console.log(dataReceive);
-      setData(dataReceive);
+      const response = await fetch("http://localhost:80/api/products");
+      const dataReceived = await response.json();
+      setData(dataReceived);
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
   };
 
-  const columns = [
-    "Id",
-    "Type",
-    "Name",
-    "Points",
-    "Bonus",
-    "Setllement Points",
-    "Sample Points",
-    "Action"
-  ];
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Product Records", 20, 10);
 
-  const finalData = data?.map((item, index) => {
-    return {
-      id: item.id,
-      type: item.product_type, // type
-      name: item.product_name, // name
-      points: item.points,
-      bonus: item.bonous,
-      stock: item.stock,
-      samplePoints: item.points_on_sample,
-      settlementpoints: item.points_on_settlement,
-      Action: (
-        <div style={{ display: "flex", gap: "1rem" }}>
-          <Button
-            variant="primary"
-            onClick={() => {
-              handleEdit(item);
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              handleDelete(item.id);
-            }}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    };
-  });
-  console.log(finalData);
+    const columns = ["Id", "Type", "Name", "Points", "Bonus", "Settlement Points", "Sample Points"];
+    const rows = data.map((item, index) => [
+      index + 1,
+      item.product_type || "N/A",
+      item.product_name || "N/A",
+      item.points || "N/A",
+      item.bonous || "N/A",
+      item.points_on_settlement || "N/A",
+      item.points_on_sample || "N/A"
+    ]);
+
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+      startY: 20,
+      didDrawPage: (data) => {
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(10);
+        doc.text(`Printed By: ${printedBy}`, 20, pageHeight - 20);
+        doc.text(`Printed On: ${printedOn}`, 20, pageHeight - 10);
+      }
+    });
+
+    doc.save("Product_Records.pdf");
+  };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  
-  
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const paginatedData = data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (!isNaN(value) && value > 0) {
+      setItemsPerPage(value);
+      setCurrentPage(1); // Reset to the first page
+    }
+  };
 
   return (
     <Container>
-      <Card
-        className="mb-4 bg-light"
-        style={{ boxShadow: "4px 4px 10px black " }}
-      >
+      <Card className="mb-4 bg-light" style={{ boxShadow: "4px 4px 10px black " }}>
         <Card.Header className="bg-primary text-light">
-          <h5 className="mb-0">PRODUCT</h5>
+          <h5 className="mb-0">PRODUCTS</h5>
         </Card.Header>
         <Card.Body>
+        <div style={{ display: "flex", gap: "1rem" }}>
           <Row>
             <Col>
-              <Button variant="success" onClick={handleOpen} className="mb-3">
+                <Button variant="info" onClick={handleOpen} className="mb-3 bg-info" size="vsm">
                 Add Product
               </Button>
+              <Button variant="success" onClick={exportPDF} className="mb-3" size="vsm">
+                Print
+              </Button>
             </Col>
+          </Row>
+      </div>
+
+          <Row className="mb-3 justify-content-end">
+  <Col xs="auto">
+    <Form.Group controlId="rowsPerPage">
+      <Form.Label>Rows Per Page:</Form.Label>
+      <Form.Control
+        as="select"
+        value={itemsPerPage}
+        onChange={handleItemsPerPageChange}
+      >
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </Form.Control>
+    </Form.Group>
+  </Col>
           </Row>
 
           <Table striped bordered hover responsive variant="light">
             <thead style={{ backgroundColor: "black", color: "white" }}>
               <tr>
-                {columns.map((col, index) => (
-                  <th key={index} className="text-center bg-black  h6 font-weight-bold py-1"
-                  style={{
-                    backgroundColor: "#00bcd4",
-                    color: "white",
-                    width:
-                      index === 0 ? "50px" : index === 1 ? "100px" : "150px",
-                  }} // Adjust widths as needed
-                  >{col}</th>
-                ))}
+                <th>Id</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Points</th>
+                <th>Bonus</th>
+                <th>Settlement Points</th>
+                <th>Sample Points</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {finalData.length > 0 ? (
-                finalData.map((item, index) => (
+              {paginatedData.length > 0 ? (
+                paginatedData.map((item, index) => (
                   <tr key={index}>
                     <td>{item.id}</td>
-                    <td>{item.type}</td>
-                    <td>{item.name}</td>
+                    <td>{item.product_type}</td>
+                    <td>{item.product_name}</td>
                     <td>{item.points}</td>
-                    <td>{item.bonus}</td>
-                    <td>{item.settlementpoints}</td>
-                    <td>{item.samplePoints}</td>
-                    {<td>{item.Action}</td>}
+                    <td>{item.bonous}</td>
+                    <td>{item.points_on_settlement}</td>
+                    <td>{item.points_on_sample}</td>
+                    <td>
+                      <div style={{ display: "flex", gap: "1rem" }}>
+                        <Button variant="primary" onClick={() => handleEdit(item)}>
+                          Edit
+                        </Button>
+                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={columns.length} className="text-center">
+                  <td colSpan="8" className="text-center">
                     No Products Found
                   </td>
                 </tr>
               )}
             </tbody>
           </Table>
+
+          <Row className="mt-3">
+            <Col className="text-center">
+              <Button variant="secondary" onClick={handlePreviousPage} disabled={currentPage === 1}>
+                Previous
+              </Button>
+              <span className="mx-3">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button variant="secondary" onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Next
+              </Button>
+            </Col>
+          </Row>
         </Card.Body>
       </Card>
-
-      <Modal show={visible} onHide={onClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {type === "Add" ? "Add Product" : "Edit Product"}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {type === "Add" ? (
-            <AddProduct close={onClose} fetchData={fetchData} />
-          ) : (
-            <EditProduct product={item} close={onClose} fetchData={fetchData} /> // Replace with the Edit form when available
-          )}
-        </Modal.Body>
-      </Modal>
     </Container>
   );
 };
