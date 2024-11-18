@@ -1,17 +1,5 @@
 import React, { useEffect, useState } from "react";
-<<<<<<< HEAD
-import {
-  Table,
-  Container,
-  Row,
-  Col,
-  Button,
-  Card,
-  Modal
-} from "react-bootstrap";
-=======
-import { Table, Container, Row, Col, Button, Card, Form } from "react-bootstrap";
->>>>>>> 77c6448efa0677a9aa19847803e63c0d3cbcc4a5
+import { Table, Container, Row, Col, Button, Card, Form,Modal } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -20,14 +8,11 @@ import EditClient from "./Forms/EditClient";
 
 const Clients = () => {
   const [data, setData] = useState([]);
-<<<<<<< HEAD
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState("Add");
   const [item, setItem] = useState({});
-=======
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
->>>>>>> 77c6448efa0677a9aa19847803e63c0d3cbcc4a5
   const navigate = useNavigate();
    
   const printedBy = localStorage.getItem("userName") || "Admin"; // Replace with actual logic if needed
