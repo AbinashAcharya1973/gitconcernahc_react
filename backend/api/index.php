@@ -1,8 +1,9 @@
 <?php
 // CORS settings
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST,PUT, DELETE, OPTIONS');
 header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Specify allowed headers
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -1163,6 +1164,145 @@ elseif ($requestUri === '/api/updatestaffs' && $requestMethod === 'POST') {
         echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
     }
 }
+
+////////////////Update Clients////////////////
+elseif ($requestUri === '/api/updateclients' && $requestMethod === 'POST') {
+    $clientData = getPostData();
+
+    // Validate required data fields
+    // if (
+    //     !isset($clientData['client_id'], $clientData['client_type'], $clientData['client_code'], 
+    //            $clientData['client_name'], $clientData['client_email'], $clientData['client_mobile'], $clientData['client_address'])
+    // ) {
+    //     http_response_code(400);
+    //     echo json_encode(['error' => 'Invalid data provided']);
+    //     return;
+    // }
+
+    // Assign variables from request data, with defaults if fields are missing
+    $client_id = $clientData['client_id'] ?? null;
+    $client_type = $clientData['client_type'] ?? '';
+    $client_code = $clientData['client_code'] ?? '';
+    $client_name = $clientData['client_name'] ?? '';
+    $client_email = $clientData['client_email'] ?? null; // Optional field
+    $client_mobile = $clientData['client_mobile'] ?? '';
+    $client_address = $clientData['client_address'] ?? '';
+
+    // Check if required fields are null or empty after the assignments
+    if (!$client_id || !$client_type || !$client_code || !$client_name || !$client_mobile || !$client_address) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Some required fields are missing']);
+        return;
+    }
+
+    try {
+        // SQL query to update the client record
+        $updateClient = 'UPDATE clients SET client_type = ?, client_code = ?, client_name = ?, client_email = ?, client_mobile = ?, client_address = ? WHERE client_id = ?';
+        $stmt = $db->prepare($updateClient);
+
+        // Execute the prepared statement with data
+        $stmt->execute([$client_type, $client_code, $client_name, $client_email, $client_mobile, $client_address, $client_id]);
+
+        http_response_code(201);
+        echo json_encode(['message' => 'Client updated successfully']);
+        
+    } catch (PDOException $ex) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database Update failed: ' . $ex->getMessage()]);
+    }
+}
+////////////////Delete from staffs////////////////////////
+elseif (preg_match('/\/api\/deleteStaff\/(\d+)/', $requestUri, $matches) && $requestMethod === 'DELETE') {
+    $staffId = (int) $matches[1]; // Extract and sanitize the staff ID from the URL
+
+    try {
+        // Check if the staffId exists in the visit_head field
+        $checkSql = 'SELECT staff_id FROM visit_head WHERE staff_id = :staff_id';
+        $checkStmt = $db->prepare($checkSql);
+        $checkStmt->bindParam(':staff_id', $staffId, PDO::PARAM_INT);
+        $checkStmt->execute();
+
+        if ($checkStmt->rowCount() > 0) {
+            // Staff ID exists in the visit_head table; do not delete
+            http_response_code(400);
+            echo json_encode(['error' => 'Staff ID is associated with visit_head and cannot be deleted']);
+        } else {
+            // Staff ID is not in visit_head; proceed to delete from all relevant tables
+            $db->beginTransaction(); // Start a transaction
+
+            // Delete from staffs table
+            $deleteStaffSql = 'DELETE FROM staffs WHERE id = :staff_id';
+            $deleteStaffStmt = $db->prepare($deleteStaffSql);
+            $deleteStaffStmt->bindParam(':staff_id', $staffId, PDO::PARAM_INT);
+            $deleteStaffStmt->execute();
+
+            // Delete from users table
+            $deleteUserSql = 'DELETE FROM users WHERE staff_id = :staff_id';
+            $deleteUserStmt = $db->prepare($deleteUserSql);
+            $deleteUserStmt->bindParam(':staff_id', $staffId, PDO::PARAM_INT);
+            $deleteUserStmt->execute();
+
+            // Delete from visit_head table (in case there are additional unrelated records)
+            $deleteVisitHeadSql = 'DELETE FROM visit_head WHERE staff_id = :staff_id';
+            $deleteVisitHeadStmt = $db->prepare($deleteVisitHeadSql);
+            $deleteVisitHeadStmt->bindParam(':staff_id', $staffId, PDO::PARAM_INT);
+            $deleteVisitHeadStmt->execute();
+
+            $db->commit(); // Commit the transaction
+
+            http_response_code(200);
+            echo json_encode(['message' => 'Staff deleted successfully from all tables']);
+        }
+    } catch (PDOException $e) {
+        $db->rollBack(); // Roll back the transaction in case of error
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+}
+
+//////////////////////////Delete Products///////////////////////////////////////////
+
+elseif (preg_match('/\/api\/deleteProduct\/(\d+)/', $requestUri, $matches) && $requestMethod === 'DELETE') {
+    $productId = (int) $matches[1]; // Extract and sanitize the product ID from the URL
+
+    try {
+        // Check if the product_id exists in stock, visit_details, or outward_challan_details tables
+        $checkSql = '
+            SELECT product_id FROM stock WHERE product_id = :product_id
+            UNION
+            SELECT product_id FROM visit_details WHERE product_id = :product_id
+            UNION
+            SELECT product_id FROM outward_challan_details WHERE product_id = :product_id';
+        $checkStmt = $db->prepare($checkSql);
+        $checkStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+        $checkStmt->execute();
+
+        if ($checkStmt->rowCount() > 0) {
+            // Product ID exists in one or more related tables; do not delete
+            http_response_code(400);
+            echo json_encode(['error' => 'Product ID is associated with other records and cannot be deleted']);
+        } else {
+            // Product ID is not associated with other records; proceed to delete from products table
+            $deleteProductSql = 'DELETE FROM products WHERE id = :product_id';
+            $deleteProductStmt = $db->prepare($deleteProductSql);
+            $deleteProductStmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+            $deleteProductStmt->execute();
+
+            if ($deleteProductStmt->rowCount() > 0) {
+                http_response_code(200);
+                echo json_encode(['message' => 'Product deleted successfully']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['error' => 'Product not found']);
+            }
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+}
+
+
 else {
     http_response_code(404);
     echo json_encode(['error' => 'Route Not Found','msg'=>$requestUri]);
