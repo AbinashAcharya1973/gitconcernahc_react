@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Table, Container, Row, Col, Card } from 'react-bootstrap'
+import { Table, Container, Row, Col, Card,Pagination } from 'react-bootstrap'
 import { Modal, Button } from 'react-bootstrap';
 import AddStaff from './Forms/AddStaff'
 import EditStaff from './Forms/EditStaff';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const SelectDropdown = ({ label, name, value, onChange, options }) => {
   return (
@@ -35,6 +37,9 @@ const Staff = () => {
     usertype: '' // Track the selected designation
   });
   const [userOptions, setUserOptions] = useState([]); // For designation options
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Default items per page
+
 
   const updateState = (newState) => {
     setType(newState)
@@ -122,6 +127,45 @@ const Staff = () => {
     ? data.filter((item) => item.designation.toLowerCase() === formData.usertype.toLowerCase())
     : data;
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    const tableColumn = ['Id', 'Designation', 'Code', 'Fullname', 'Mobile', 'Reporting To'];
+    const tableRows = filteredData.map(item => [
+      item.id,
+      item.designation,
+      item.code,
+      item.fullname,
+      item.mobile,
+      item.reporting_to,
+    ]);
+
+    doc.text('Staff Report', 14, 10);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
+
+    doc.save('Staff_Report.pdf');
+  };
+
+
   const columns = ['Id', 'Designation', 'Code', 'Fullname', 'Mobile', 'Reporting To','Action'];
 
   const finalData = filteredData?.map((item, index) => {
@@ -180,8 +224,35 @@ const Staff = () => {
                 >
                   Add Staff
                 </Button>
+                <Button
+                  variant="primary"
+                  className="ms-2 mb-3"
+                  onClick={exportPDF}
+                >
+                  Export PDF
+                </Button>
               </Col>
             </Row>
+
+            {/* Rows Per Page Dropdown */}
+            <div className="d-flex justify-content-end align-items-center mb-3">
+              <label htmlFor="rowsPerPage" className="me-2">
+                Rows Per Page:
+              </label>
+              <select
+                id="rowsPerPage"
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1); // Reset to the first page on changing rows per page
+                }}
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
 
             <Table striped bordered hover responsive variant="light">
               <thead style={{ backgroundColor: "black", color: "white" }}>
@@ -220,6 +291,17 @@ const Staff = () => {
                 )}
               </tbody>
             </Table>
+
+            {/* Pagination */}
+            <Pagination className="justify-content-center mt-3">
+              <Pagination.Prev onClick={handlePreviousPage} disabled={currentPage === 1}>
+                Previous
+              </Pagination.Prev>
+              <Pagination.Item active>{currentPage}</Pagination.Item>
+              <Pagination.Next onClick={handleNextPage} disabled={currentPage === totalPages}>
+                Next
+              </Pagination.Next>
+            </Pagination>
           </Card.Body>
         </Card>
 
