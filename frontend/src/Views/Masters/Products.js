@@ -26,10 +26,29 @@ const Products = () => {
   };
 
   // Function to handle deleting a product
-  const handleDelete = (id) => {
-    // Add API call to delete a product by id
-    // Example:
-    fetch(`/products/delete/${id}`, { method: 'DELETE' }).then(() => fetchData());
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        const response = await fetch(`http://localhost:80/api/deleteProduct/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          alert('Product deleted successfully!');
+          fetchData(); // Refresh data after deletion
+        } else {
+          const errorData = await response.json();
+          console.error('Error deleting product:', errorData);
+          alert(`Failed to delete product: ${errorData.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error while calling the delete API:', error);
+        alert('A network error occurred while deleting the product.');
+      }
+    }
   };
 
   const onClose = () => {
@@ -97,6 +116,9 @@ const Products = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  
+  
 
   return (
     <Container>

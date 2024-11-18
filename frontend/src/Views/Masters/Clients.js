@@ -6,18 +6,30 @@ import {
   Col,
   Button,
   Card,
+  Modal
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import EditClient from "./Forms/EditClient";
+
 
 const Clients = () => {
   const [data, setData] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [type, setType] = useState("Add");
+  const [item, setItem] = useState({});
   const navigate = useNavigate();
 
   // Function to navigate to the Add Client page
   const handleOpen = () => {
     navigate("/master/clients/add");
+  };
+
+  const handleEdit = (item) => {
+    setType("Edit");
+    setItem(item);
+    setVisible(true);
   };
 
   // Function to handle deleting a client
@@ -74,6 +86,11 @@ const Clients = () => {
     doc.save("client_records.pdf");
   };
 
+  const onClose = () => {
+    setType("Add");
+    setVisible(false);
+  };
+
   // Table columns
   const columns = [
     "Id",
@@ -86,6 +103,7 @@ const Clients = () => {
     "Action",
   ];
 
+  
   return (
     <Container className="p-4">
       <Card className="mb-4 bg-light" style={{ boxShadow: "4px 4px 10px black " }}>
@@ -171,6 +189,21 @@ const Clients = () => {
           </Table>
         </Card.Body>
       </Card>
+
+      <Modal show={visible} onHide={onClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {type === "Add" ? "Add Product" : "Edit Product"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {type === "Add" ? (
+            <EditClient client={item} close={onClose} fetchData={fetchData} />
+          ) : (
+            <EditClient client={item} close={onClose} fetchData={fetchData} /> // Replace with the Edit form when available
+          )}
+        </Modal.Body>
+      </Modal>
     </Container>
   );
 };

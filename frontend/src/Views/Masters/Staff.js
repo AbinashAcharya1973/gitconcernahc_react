@@ -51,9 +51,33 @@ const Staff = () => {
     setVisible(true)
   }
 
-  const handleDelete = (id) => {
-    // Delete logic here
-  }
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this staff member?')) {
+      try {
+        const response = await fetch(`http://localhost:80/api/deleteStaff/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          
+          },
+        });
+  
+        if (response.ok) {
+          alert('Staff deleted successfully!');
+          fetchData(); // Refresh data after deletion
+        } else {
+          const errorData = await response.json();
+          console.error('Error deleting staff:', errorData);
+          alert(`Failed to delete staff: ${errorData.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error while calling the delete API:', error);
+        alert('A network error occurred while deleting the staff.');
+      }
+    }
+  };
+  
+  
 
   const onClose = () => {
     setType('Add')
@@ -120,7 +144,7 @@ const Staff = () => {
           </Button>
           <Button
             variant="danger"
-            onClick={() => handleDelete(item._id)}
+            onClick={() => handleDelete(item.id)}
           >
             Delete
           </Button>
