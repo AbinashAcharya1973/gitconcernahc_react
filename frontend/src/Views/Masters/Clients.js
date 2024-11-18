@@ -32,13 +32,30 @@ const Clients = () => {
 
   // Function to handle deleting a client
   const handleDelete = async (id) => {
-    try {
-      await fetch(`/client/delete/${id}`, { method: "DELETE" });
-      fetchData();
-    } catch (error) {
-      console.error("Failed to delete client:", error);
+    if (window.confirm('Are you sure you want to delete this client?')) {
+      try {
+        const response = await fetch(`http://localhost:80/api/deleteClient/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (response.ok) {
+          alert('Client deleted successfully!');
+          fetchData(); // Refresh data after deletion
+        } else {
+          const errorData = await response.json();
+          console.error('Error deleting client:', errorData);
+          alert(`Failed to delete client: ${errorData.error || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Error while calling the delete API:', error);
+        alert('A network error occurred while deleting the client.');
+      }
     }
   };
+  
 
   // Fetch Client data from the backend
   const fetchData = async () => {
@@ -238,7 +255,7 @@ const Clients = () => {
                         <Button variant="primary" onClick={() => handleEdit(item)}>
                           Edit
                         </Button>
-                        <Button variant="danger" onClick={() => handleDelete(item.id)}>
+                        <Button variant="danger" onClick={() => handleDelete(item.client_id)}>
                           Delete
                         </Button>
                       </div>

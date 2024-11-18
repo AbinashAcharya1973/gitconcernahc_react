@@ -1302,6 +1302,43 @@ elseif (preg_match('/\/api\/deleteProduct\/(\d+)/', $requestUri, $matches) && $r
     }
 }
 
+////////////////////////Delete Clients///////////////////////////////
+
+elseif (preg_match('/\/api\/deleteClient\/(\d+)/', $requestUri, $matches) && $requestMethod === 'DELETE') {
+    $clientId = (int) $matches[1]; // Extract and sanitize the client ID from the URL
+
+    try {
+        // Check if the client_id exists in visit_head table's doctor_id field
+        $checkSql = 'SELECT doctor_id FROM visit_head WHERE doctor_id = :client_id';
+        $checkStmt = $db->prepare($checkSql);
+        $checkStmt->bindParam(':client_id', $clientId, PDO::PARAM_INT);
+        $checkStmt->execute();
+
+        if ($checkStmt->rowCount() > 0) {
+            // Client ID exists in visit_head table as doctor_id; do not delete
+            http_response_code(400);
+            echo json_encode(['error' => 'Client ID is associated with visit_head as a doctor and cannot be deleted']);
+        } else {
+            // Client ID is not associated; proceed to delete from clients table
+            $deleteClientSql = 'DELETE FROM clients WHERE client_id = :client_id';
+            $deleteClientStmt = $db->prepare($deleteClientSql);
+            $deleteClientStmt->bindParam(':client_id', $clientId, PDO::PARAM_INT);
+            $deleteClientStmt->execute();
+
+            if ($deleteClientStmt->rowCount() > 0) {
+                http_response_code(200);
+                echo json_encode(['message' => 'Client deleted successfully']);
+            } else {
+                http_response_code(404);
+                echo json_encode(['error' => 'Client not found']);
+            }
+        }
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    }
+}
+
 
 else {
     http_response_code(404);
